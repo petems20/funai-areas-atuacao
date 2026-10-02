@@ -1,0 +1,5 @@
+# Os documentos (documentos/*.qmd) executam a partir da raiz do projeto, para ler o cache do
+# {targets} (targets::tar_read) e as funções em R/, e são renderizados em saidas/documentos/.
+project:
+  execute-dir: project
+  output-dir: saidas

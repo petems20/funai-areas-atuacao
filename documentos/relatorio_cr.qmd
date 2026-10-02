@@ -1,0 +1,117 @@
+---
+title: "Relatório da Coordenação Regional"
+lang: pt-BR
+params:
+  cd_uorg: "88135"
+format:
+  pdf:
+    fig-width: 6.3
+    fig-height: 4.2
+    documentclass: article
+    geometry: margin=2cm
+    fontsize: 10pt
+    toc: false
+execute:
+  echo: false
+  warning: false
+---
+
+```{r}
+#| include: false
+library(dplyr)
+library(sf)
+library(ggplot2)
+
+# Fontes as próprias funções de plotagem/tema (CORES_FUNAI, obter_tema, criar_mapa_destaque_cr,
+# grafico_piramide_etaria) -- este .qmd roda como um processo R separado do `tar_make()`, então
+# não herda as funções carregadas via `tar_source()` em `_targets.R`; precisa sourcear de novo.
+source("R/config.R")
+source("R/gera_graficos_relatorio.R")
+source("R/relatorio_cr.R")
+
+dados_todas_cr <- targets::tar_read(dados_relatorio_cr)
+malha_dissolvida <- targets::tar_read(malha_basica_dissolvida)
+
+cr <- dados_todas_cr |> filter(as.character(cd_uorg) == as.character(params$cd_uorg))
+
+if (nrow(cr) == 0) {
+  stop("cd_uorg '", params$cd_uorg, "' não encontrado em dados_relatorio_cr.")
+}
+
+fmt_n <- function(x) scales::label_number(big.mark = ".", decimal.mark = ",")(round(x))
+fmt_r <- function(x) scales::label_number(big.mark = ".", decimal.mark = ",", accuracy = 0.1)(x)
+posicao <- function(rank, n) paste0(rank, "ª de ", n)
+```
+
+# `r cr$nome_uorg` (`r cr$sigla`)
+
+Relatório padronizado da área de atuação, gerado automaticamente a partir da malha básica
+(Terra Indígena + Município). Os indicadores comparam esta Coordenação Regional (CR) com as
+demais `r cr$total_pi_n - 1` CRs sempre que aplicável.
+
+```{r}
+#| fig-cap: !expr paste0("Área de atuação de ", cr$sigla, " (destaque) em relação às demais CRs")
+#| fig-height: 3.4
+criar_mapa_destaque_cr(malha_dissolvida, cr$cd_uorg, cor = CORES_FUNAI[["principal"]])
+```
+
+## Indicadores gerais
+
+```{r}
+tab_geral <- data.frame(
+  Indicador = c(
+    "População indígena (Censo 2022)",
+    "População indígena (SIASI)",
+    "Área de atuação (km²)",
+    "Focos de queimada (jan.-mai. 2026)",
+    "Número de aldeias (Sisaldeias-Funai)",
+    "Número de aldeias (SIASI)",
+    "Localidades indígenas (IBGE 2022)",
+    "Número de etnias (Censo 2022)"
+  ),
+  Valor = c(
+    fmt_n(cr$total_pi), fmt_n(cr$total_pi_siasi), fmt_n(cr$total_area_km2),
+    fmt_n(cr$n_focos),
+    fmt_n(cr$n_aldeias_sisaldeias), fmt_n(cr$n_aldeias_siasi),
+    fmt_n(cr$n_localidades_indigenas), fmt_n(cr$n_etnias)
+  ),
+  `Posição entre as CRs` = c(
+    posicao(cr$total_pi_rank, cr$total_pi_n), "--",
+    posicao(cr$total_area_km2_rank, cr$total_area_km2_n),
+    posicao(cr$n_focos_rank, cr$n_focos_n),
+    posicao(cr$n_aldeias_sisaldeias_rank, cr$n_aldeias_sisaldeias_n), "--",
+    posicao(cr$n_localidades_indigenas_rank, cr$n_localidades_indigenas_n),
+    posicao(cr$n_etnias_rank, cr$n_etnias_n)
+  ),
+  check.names = FALSE
+)
+knitr::kable(tab_geral, align = c("l", "r", "r"))
+```
+
+*Fonte: Censo Demográfico 2022 (IBGE), SIASI (SasiSUS), Banco de Dados de Queimadas (INPE),
+Sisaldeias (Funai), Localidades Indígenas (IBGE).*
+
+## Pirâmide etária (SIASI)
+
+```{r}
+#| fig-cap: "Distribuição da população indígena por sexo e faixa etária, segundo o SIASI"
+if (nrow(cr$piramide_etaria[[1]]) > 0) {
+  grafico_piramide_etaria(cr$piramide_etaria[[1]])
+} else {
+  cat("*Sem dados de pirâmide etária do SIASI para esta CR.*")
+}
+```
+
+## Etnias
+
+```{r}
+etnias <- cr$etnias[[1]]
+if (!is.null(etnias) && nrow(etnias) > 0) {
+  knitr::kable(
+    etnias |> transmute(Etnia = nm_etnia, `População (Censo 2022)` = fmt_n(qt_pessoas)),
+    align = c("l", "r")
+  )
+} else {
+  cat("*Sem dados de etnias disponíveis para esta CR.*")
+}
+```

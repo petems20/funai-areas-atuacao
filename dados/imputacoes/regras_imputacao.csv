@@ -1,0 +1,142 @@
+etapa;prioridade;ordem;tipo;codigo;descricao;somente_se_cr_atual;exceto_se_cr_atual;cd_uorg_destino;sigla_destino;justificativa;fonte
+v2;1;1;uf;26;PE;;509512;509512;CR-PE;CR-PE atende todo o estado de Pernambuco;
+v2;1;2;uf;43;RS;87791;;119833;CR-PFD;Setores do RS atribuídos à CR-INTS passam à CR-PFD;
+v2;1;3;uf;42;SC;;87694;87791;CR-INTS;CR-INTS atende Santa Catarina, exceto a faixa litorânea da CR-LIS;
+v2;1;4;uf;41;PR;;87694,230279;230279;CR-GPV;CR-GPV atende o Paraná, exceto a faixa litorânea da CR-LIS;
+v2;1;5;uf;31;MG;;87621;87621;CR-MGES;CR-MGES atende Minas Gerais e Espírito Santo;
+v2;1;5;uf;32;ES;;87621;87621;CR-MGES;CR-MGES atende Minas Gerais e Espírito Santo;
+v2;1;6;uf;50;MS;88065;;88147;CR-CGR;Setores de MS atribuídos à CR-CGB passam à CR-CGR;
+v2;1;7;uf;23;CE;;118218;118218;CR-CEPIRN;CR-CEPIRN atende todo o Ceará;
+v2;1;8;uf;25;PB;;230272;230272;CR-JPA;CR-JPA atende toda a Paraíba;
+v2;1;9;uf;13;AM;87743;;88035;CR-RNG;Setores do AM atribuídos à CR-RR I passam à CR-RNG;
+v2;1;10;uf;52;GO;;87799;87799;CR-ATO;CR-ATO atende Goiás e o Distrito Federal;
+v2;1;10;uf;53;DF;;87799;87799;CR-ATO;CR-ATO atende Goiás e o Distrito Federal;
+v2;1;11;uf;17;TO;;87799;87799;CR-ATO;CR-ATO atende todo o Tocantins, incluindo a Ilha do Bananal;
+v2;1;12;uf;21;MA;;87987;87987;CR-MA;CR-MA atende todo o Maranhão;
+v2;1;13;uf;35;SP;;108038;108038;CR-Lise;CR-Lise atende todo o estado de São Paulo;
+v2;1;14;uf;29;BA;;88128;88104;CR-BSF;Setores da Bahia fora da CR-SBA passam à CR-BSF;
+v2;1;15;uf;15;PA;87987;;87633;CR-BTO;Setores do Pará atribuídos à CR-MA passam à CR-BTO;
+v2;1;16;uf;50;MS;88135;;88147;CR-CGR;Setores de MS atribuídos à CR-XAV passam à CR-CGR;
+v2;1;17;municipio;1300607;Benjamin Constant/AM;;;87934;CR-AS;Imputação manual para a CR-AS;
+v2;1;17;municipio;1303908;São Paulo de Olivença/AM;;;87934;CR-AS;Imputação manual para a CR-AS;
+v2;1;18;municipio;5106307;Paranatinga/MT;;;88135;CR-XAV;Paranatinga para a CR-XAV;
+v2;1;19;municipio;5100201;Água Boa/MT;;;88117;CR-RC;Arranjo de atuação consolidado para a CR-RC;
+v2;1;19;municipio;5106174;Nova Nazaré/MT;;;88117;CR-RC;Arranjo de atuação consolidado para a CR-RC;
+v2;2;1;arquivo_setores;imputacoes_setor.csv;;;;;;Imputações manuais por setor censitário elaboradas pela CGGE com as CRs (coluna lote: planilha de origem);
+v2;3;1;ti;46401;Trombetas/Mapuera;;;87552;CR-MAO;TIs Trombetas e Mapuera atribuídas à CR-MAO;
+v2;3;2;ti;10001;Chão Preto;;;88135;CR-XAV;TIs vinculadas à CR-XAV no SII;
+v2;3;2;ti;27201;Marechal Rondon;;;88135;CR-XAV;TIs vinculadas à CR-XAV no SII;
+v2;3;2;ti;32701;Parabubure;;;88135;CR-XAV;TIs vinculadas à CR-XAV no SII;
+v2;3;2;ti;41101;Sangradouro/Volta Grande;;;88135;CR-XAV;TIs vinculadas à CR-XAV no SII;
+v2;3;2;ti;47801;Ubawawe;;;88135;CR-XAV;TIs vinculadas à CR-XAV no SII;
+v2;3;2;ti;58101;São Marcos - MT;;;88135;CR-XAV;TIs vinculadas à CR-XAV no SII;
+v2;3;2;ti;73601;Wedezé;;;88135;CR-XAV;TIs vinculadas à CR-XAV no SII;
+v2;3;3;ti;3901;Areões;;;88117;CR-RC;TIs vinculadas à CR-RC no SII;
+v2;3;3;ti;26901;Maraiwatsede;;;88117;CR-RC;TIs vinculadas à CR-RC no SII;
+v2;3;3;ti;35301;Pimentel Barbosa;;;88117;CR-RC;TIs vinculadas à CR-RC no SII;
+v2;3;4;ti;11201;Enawenê-Nawê;;;88094;CR-NOMT;Adstrição da TI a uma única CR;
+v2;3;5;ti;43001;Sete de Setembro;;;87715;CR-CAC;Adstrição da TI a uma única CR;
+v2;3;6;ti;51101;Zoró;;;88184;CR-JPR;Adstrição da TI a uma única CR;
+v2;3;7;ti;48201;Uru-Eu-Wau-Wau;;;88184;CR-JPR;Adstrição da TI a uma única CR;
+v2;3;8;ti;27701;Massaco;;;88184;CR-JPR;Adstrição da TI a uma única CR;
+v2;3;9;ti;38601;Rio Branco;;;88184;CR-JPR;Adstrição da TI a uma única CR;
+v2;3;10;ti;38501;Rio Biá;;;87934;CR-AS;Adstrição da TI a uma única CR;
+v2;3;11;ti;73795;Kulina do Rio Ueré;;;509690;CR-MJur;Adstrição da TI a uma única CR;
+v2;3;12;ti;23701;Kulina do Medio Jurua;;;509690;CR-MJur;Adstrição da TI a uma única CR;
+v2;3;13;ti;7601;Cachoeira Seca;;;88256;CR-CLPA;Adstrição da TI a uma única CR;
+v2;3;14;ti;49501;Waimiri-Atroari;;;87552;CR-MAO;Adstrição da TI a uma única CR;
+v2;3;15;ti;68101;Kaxuyana-Tunayana;;;87552;CR-MAO;Adstrição da TI a uma única CR;
+v2;3;16;ti;73816;Curara;;;87552;CR-MAO;Adstrição da TI a uma única CR;
+v2;3;17;ti;62101;Aracá-Padauiri (Baixo Rio Negro);;;88035;CR-RNG;Adstrição da TI a uma única CR;
+v2;3;18;ti;33101;Parana do Boa Boa;;;88035;CR-RNG;Adstrição da TI a uma única CR;
+v2;3;19;ti;5402;Banawá;;;108028;CR-MPur;Adstrição da TI a uma única CR;
+v2;3;20;ti;65901;Jacareúba/Katauixi (restrição uso);;;108028;CR-MPur;Adstrição da TI a uma única CR;
+v2;3;21;ti;401;Água Preta/Inari;;;108028;CR-MPur;Adstrição da TI a uma única CR;
+v2;3;22;ti;16901;Inauini/Teuini;;;108028;CR-MPur;Adstrição da TI a uma única CR;
+v2;3;23;ti;22001;Kaxarari;;;87896;CR-Apur;Adstrição da TI a uma única CR;
+v2;3;24;ti;39501;Rio Guaporé;;;87732;CR-GJM;Adstrição da TI a uma única CR;
+v2;3;25;ti;36101;Pirineus de Souza;;;88094;CR-NOMT;Adstrição da TI a uma única CR;
+v2;3;26;ti;48501;Utiariti;;;88065;CR-CGB;Adstrição da TI a uma única CR;
+v2;3;27;ti;42101;Sararé;;;88065;CR-CGB;Adstrição da TI a uma única CR;
+v2;3;28;ti;34101;Paukalirajausu;;;88065;CR-CGB;Adstrição da TI a uma única CR;
+v2;3;29;ti;29801;Munduruku;;;87654;CR-TPJ;Adstrição da TI a uma única CR;
+v2;3;30;ti;5001;Badjonkore;;;87814;CR-KSPA;Adstrição da TI a uma única CR;
+v2;3;31;ti;28701;Menkragnoti;;;87814;CR-KSPA;Adstrição da TI a uma única CR;
+v2;3;32;ti;6101;Baú;;;87814;CR-KSPA;Adstrição da TI a uma única CR;
+v2;3;33;ti;46201;Trincheira Bacaja;;;88256;CR-CLPA;Adstrição da TI a uma única CR;
+v2;3;34;ti;68301;Apiaká do Pontal e Isolados;;;88054;CR-NMT;Adstrição da TI a uma única CR;
+v2;3;35;ti;23301;Kraolandia;;;87799;CR-ATO;Adstrição da TI a uma única CR;
+v2;3;36;ti;48701;Vale do Javari;;;120210;CR-VJ;Adstrição da TI a uma única CR;
+v2;3;37;ti;8501;Camicua;;;87896;CR-Apur;Adstrição da TI a uma única CR;
+v2;3;38;ti;73856;Valparaíso (RI);;;87896;CR-Apur;Adstrição da TI a uma única CR;
+v2;3;39;ti;6401;Boca do Acre;;;87896;CR-Apur;Adstrição da TI a uma única CR;
+v2;3;40;ti;2901;Apurinã Km 124 BR-317;;;87896;CR-Apur;Adstrição da TI a uma única CR;
+v2;3;41;ti;2701;Apurinã do Igarapé São João;;;108028;CR-MPur;Adstrição da TI a uma única CR;
+v2;3;42;ti;34201;Paumari do Cuniua;;;108028;CR-MPur;Adstrição da TI a uma única CR;
+v2;3;43;ti;34302;Paumari do Lago Manissuã;;;108028;CR-MPur;Adstrição da TI a uma única CR;
+v2;3;44;ti;34501;Paumari do Lago Paricá;;;108028;CR-MPur;Adstrição da TI a uma única CR;
+v2;3;45;ti;8401;Camadeni;;;108028;CR-MPur;Adstrição da TI a uma única CR;
+v2;3;46;ti;44701;Tenharim do Igarapé Preto;;;88184;CR-JPR;Adstrição da TI a uma única CR;
+v2;3;47;ti;8301;Cajuhiri Atravessado;;;509751;CR-MSol;Adstrição da TI a uma única CR;
+v2;3;48;ti;25601;Jatayvari;;;87608;CR-PP;Adstrição da TI a uma única CR;
+v2;3;49;ti;37801;Rancho Jacaré;;;87608;CR-PP;Adstrição da TI a uma única CR;
+v2;3;50;ti;73702;Iguatemipegua I;;;87608;CR-PP;Adstrição da TI a uma única CR;
+v2;3;51;ti;9901;Cerrito;;;87608;CR-PP;Adstrição da TI a uma única CR;
+v2;3;52;ti;1201;Alto Rio Purus;;;87896;CR-Apur;Adstrição da TI a uma única CR;
+v2;3;53;ti;41701;São Leopoldo;;;87934;CR-AS;Adstrição da TI a uma única CR;
+v2;3;54;ti;5201;Bakairi;;;88065;CR-CGB;Adstrição da TI a uma única CR;
+v2;4;1;calculado;piaui_melhor_rota;;;;;;Setores do Piauí divididos entre CR-CEPIRN e CR-MA pela melhor rota entre as duas;
+v2;5;1;hidrovia;hidrovias_escala.77;Hidrovia do Solimões;509751,87588;;108028;CR-MPur;Setores cortados pela Hidrovia do Solimões atribuídos à CR-MPur;
+v2;6;1;calculado;manter_cr_atual;;;;;;Demais setores mantêm a CR resultante da realocação da V2;
+msol;1;1;ti;101;Acapuri de Cima;;;509751;CR-MSol;TI na área de atuação proposta pelo GT CR-MSOL;GT CR-MSOL, processo SEI 15012.000027/2026-88
+msol;1;2;ti;5901;Barreira da Missão;;;509751;CR-MSol;TI na área de atuação proposta pelo GT CR-MSOL;GT CR-MSOL, processo SEI 15012.000027/2026-88
+msol;1;3;ti;10701;Cuiu-Cuiu;;;509751;CR-MSol;TI na área de atuação proposta pelo GT CR-MSOL;GT CR-MSOL, processo SEI 15012.000027/2026-88
+msol;1;4;ti;11601;Espírito Santo;;;509751;CR-MSol;TI na área de atuação proposta pelo GT CR-MSOL;GT CR-MSOL, processo SEI 15012.000027/2026-88
+msol;1;5;ti;12001;Estrela da Paz;;;509751;CR-MSol;TI na área de atuação proposta pelo GT CR-MSOL;GT CR-MSOL, processo SEI 15012.000027/2026-88
+msol;1;6;ti;73815;Gaviãozinho;;;509751;CR-MSol;TI na área de atuação proposta pelo GT CR-MSOL;GT CR-MSOL, processo SEI 15012.000027/2026-88
+msol;1;7;ti;15801;Igarapé Grande;;;509751;CR-MSol;TI na área de atuação proposta pelo GT CR-MSOL;GT CR-MSOL, processo SEI 15012.000027/2026-88
+msol;1;8;ti;18701;Jaquiri;;;509751;CR-MSol;TI na área de atuação proposta pelo GT CR-MSOL;GT CR-MSOL, processo SEI 15012.000027/2026-88
+msol;1;9;ti;73795;Kulina do Rio Ueré;;;509751;CR-MSol;TI na área de atuação proposta pelo GT CR-MSOL;GT CR-MSOL, processo SEI 15012.000027/2026-88
+msol;1;10;ti;24001;Kumaru do Lago Ualá;;;509751;CR-MSol;TI na área de atuação proposta pelo GT CR-MSOL;GT CR-MSOL, processo SEI 15012.000027/2026-88
+msol;1;11;ti;25901;Macarrão;;;509751;CR-MSol;TI na área de atuação proposta pelo GT CR-MSOL;GT CR-MSOL, processo SEI 15012.000027/2026-88
+msol;1;12;ti;26601;Mapari;;;509751;CR-MSol;TI na área de atuação proposta pelo GT CR-MSOL;GT CR-MSOL, processo SEI 15012.000027/2026-88
+msol;1;13;ti;26701;Maraã Urubaxi;;;509751;CR-MSol;TI na área de atuação proposta pelo GT CR-MSOL;GT CR-MSOL, processo SEI 15012.000027/2026-88
+msol;1;14;ti;27001;Marajai;;;509751;CR-MSol;TI na área de atuação proposta pelo GT CR-MSOL;GT CR-MSOL, processo SEI 15012.000027/2026-88
+msol;1;15;ti;28901;Meria;;;509751;CR-MSol;TI na área de atuação proposta pelo GT CR-MSOL;GT CR-MSOL, processo SEI 15012.000027/2026-88
+msol;1;16;ti;29201;Miratu;;;509751;CR-MSol;TI na área de atuação proposta pelo GT CR-MSOL;GT CR-MSOL, processo SEI 15012.000027/2026-88
+msol;1;17;ti;33101;Parana do Boa Boa;;;509751;CR-MSol;TI na área de atuação proposta pelo GT CR-MSOL;GT CR-MSOL, processo SEI 15012.000027/2026-88
+msol;1;18;ti;36801;Porto Praia;;;509751;CR-MSol;TI na área de atuação proposta pelo GT CR-MSOL;GT CR-MSOL, processo SEI 15012.000027/2026-88
+msol;1;19;ti;38201;Rio Apaporis;;;509751;CR-MSol;TI na área de atuação proposta pelo GT CR-MSOL;GT CR-MSOL, processo SEI 15012.000027/2026-88
+msol;1;20;ti;38501;Rio Biá;;;509751;CR-MSol;TI na área de atuação proposta pelo GT CR-MSOL;GT CR-MSOL, processo SEI 15012.000027/2026-88
+msol;1;21;ti;53501;Riozinho;;;509751;CR-MSol;TI na área de atuação proposta pelo GT CR-MSOL;GT CR-MSOL, processo SEI 15012.000027/2026-88
+msol;1;22;ti;58201;São Domingos do Jacapari e Estação;;;509751;CR-MSol;TI na área de atuação proposta pelo GT CR-MSOL;GT CR-MSOL, processo SEI 15012.000027/2026-88
+msol;1;23;ti;47201;Tupã-Supé;;;509751;CR-MSol;TI na área de atuação proposta pelo GT CR-MSOL;GT CR-MSOL, processo SEI 15012.000027/2026-88
+msol;1;24;ti;47701;Uati-Paraná;;;509751;CR-MSol;TI na área de atuação proposta pelo GT CR-MSOL;GT CR-MSOL, processo SEI 15012.000027/2026-88
+msol;2;1;municipio;1300029;Alvarães/AM;;;509751;CR-MSol;Município na área de atuação proposta pelo GT CR-MSOL;GT CR-MSOL, processo SEI 15012.000027/2026-88
+msol;2;1;municipio;1301001;Carauari/AM;;;509751;CR-MSol;Município na área de atuação proposta pelo GT CR-MSOL;GT CR-MSOL, processo SEI 15012.000027/2026-88
+msol;2;1;municipio;1301605;Fonte Boa/AM;;;509751;CR-MSol;Município na área de atuação proposta pelo GT CR-MSOL;GT CR-MSOL, processo SEI 15012.000027/2026-88
+msol;2;1;municipio;1302108;Japurá/AM;;;509751;CR-MSol;Município na área de atuação proposta pelo GT CR-MSOL;GT CR-MSOL, processo SEI 15012.000027/2026-88
+msol;2;1;municipio;1302207;Juruá/AM;;;509751;CR-MSol;Município na área de atuação proposta pelo GT CR-MSOL;GT CR-MSOL, processo SEI 15012.000027/2026-88
+msol;2;1;municipio;1302306;Jutaí/AM;;;509751;CR-MSol;Município na área de atuação proposta pelo GT CR-MSOL;GT CR-MSOL, processo SEI 15012.000027/2026-88
+msol;2;1;municipio;1302801;Maraã/AM;;;509751;CR-MSol;Município na área de atuação proposta pelo GT CR-MSOL;GT CR-MSOL, processo SEI 15012.000027/2026-88
+msol;2;1;municipio;1304203;Tefé/AM;;;509751;CR-MSol;Município na área de atuação proposta pelo GT CR-MSOL;GT CR-MSOL, processo SEI 15012.000027/2026-88
+msol;2;1;municipio;1304260;Uarini/AM;;;509751;CR-MSol;Município na área de atuação proposta pelo GT CR-MSOL;GT CR-MSOL, processo SEI 15012.000027/2026-88
+msol;2;1;municipio;1301209;Coari/AM;;;87552;CR-MAO;Coari com a CR-MAO;
+msol;2;1;setor;130195105000004;Setor censitário em Itamarati/AM;;;509751;CR-MSol;Continuidade territorial com o bloco da CR-MSol;GT CR-MSOL, processo SEI 15012.000027/2026-88
+msol;3;1;calculado;realocacao_msol;;;;;;Demais setores hoje na CR-MSol vão para a melhor rota entre as outras CRs (roteamento multimodal do Norte);
+malha_basica;1;1;municipio;5100201;Água Boa/MT;;;88117;CR-RC;Malha básica: imputação manual (Água Boa, Nova Nazaré e TI Areões para CR Ribeirão Cascalheira);
+malha_basica;1;1;municipio;5106174;Nova Nazaré/MT;;;88117;CR-RC;Malha básica: imputação manual (Água Boa, Nova Nazaré e TI Areões para CR Ribeirão Cascalheira);
+malha_basica;1;1;ti;3901;Areões;;;88117;CR-RC;Malha básica: imputação manual (Água Boa, Nova Nazaré e TI Areões para CR Ribeirão Cascalheira);
+malha_basica;1;1;ti;73815;Gaviãozinho;;;509751;CR-MSol;Malha básica: imputação manual (GT CR-MSOL, processo SEI 15012.000027/2026-88) -- TI prevalece sobre o município hospedeiro majoritário fora da lista de 9 municípios do GT;
+malha_basica;1;1;ti;26701;Maraã Urubaxi;;;509751;CR-MSol;Malha básica: imputação manual (GT CR-MSOL, processo SEI 15012.000027/2026-88) -- TI prevalece sobre o município hospedeiro majoritário fora da lista de 9 municípios do GT;
+malha_basica;1;1;ti;47701;Uati-Paraná;;;509751;CR-MSol;Malha básica: imputação manual (GT CR-MSOL, processo SEI 15012.000027/2026-88) -- TI prevalece sobre o município hospedeiro majoritário fora da lista de 9 municípios do GT;
+malha_basica;1;1;ti;5201;Bakairi;;;88065;CR-CGB;Malha básica: imputação manual -- TI Bakairi acompanha a vinculação vigente no SII (CR-CGB), divergente da maior área de sobreposição (CR-XAV);
+malha_basica;1;1;municipio;4315602;Rio Grande/RS;;;87694;CR-LIS;Malha básica: imputação manual -- Rio Grande, Santa Vitória do Palmar e Chuí para CR-LIS (correção topológica os atribuía à CR-PFD pela ausência de área operacional na Lagoa dos Patos);
+malha_basica;1;1;municipio;4305439;Chuí/RS;;;87694;CR-LIS;Malha básica: imputação manual -- Rio Grande, Santa Vitória do Palmar e Chuí para CR-LIS (correção topológica os atribuía à CR-PFD pela ausência de área operacional na Lagoa dos Patos);
+malha_basica;1;1;municipio;4317301;Santa Vitória do Palmar/RS;;;87694;CR-LIS;Malha básica: imputação manual -- Rio Grande, Santa Vitória do Palmar e Chuí para CR-LIS (correção topológica os atribuía à CR-PFD pela ausência de área operacional na Lagoa dos Patos);
+malha_basica;1;1;ti;2001;Andirá-Marau;;;87552;CR-MAO;Malha básica: imputação manual -- TI Andirá-Marau e os municípios de Maués, Boa Vista do Ramos, Barreirinha e Parintins (AM) para CR-MAO, acompanhando a vinculação vigente no SII (malha básica algorítmica atribuía o conjunto à CR-TPJ);
+malha_basica;1;1;municipio;1302900;Maués/AM;;;87552;CR-MAO;Malha básica: imputação manual -- TI Andirá-Marau e os municípios de Maués, Boa Vista do Ramos, Barreirinha e Parintins (AM) para CR-MAO, acompanhando a vinculação vigente no SII (malha básica algorítmica atribuía o conjunto à CR-TPJ);
+malha_basica;1;1;municipio;1300680;Boa Vista do Ramos/AM;;;87552;CR-MAO;Malha básica: imputação manual -- TI Andirá-Marau e os municípios de Maués, Boa Vista do Ramos, Barreirinha e Parintins (AM) para CR-MAO, acompanhando a vinculação vigente no SII (malha básica algorítmica atribuía o conjunto à CR-TPJ);
+malha_basica;1;1;municipio;1300508;Barreirinha/AM;;;87552;CR-MAO;Malha básica: imputação manual -- TI Andirá-Marau e os municípios de Maués, Boa Vista do Ramos, Barreirinha e Parintins (AM) para CR-MAO, acompanhando a vinculação vigente no SII (malha básica algorítmica atribuía o conjunto à CR-TPJ);
+malha_basica;1;1;municipio;1303403;Parintins/AM;;;87552;CR-MAO;Malha básica: imputação manual -- TI Andirá-Marau e os municípios de Maués, Boa Vista do Ramos, Barreirinha e Parintins (AM) para CR-MAO, acompanhando a vinculação vigente no SII (malha básica algorítmica atribuía o conjunto à CR-TPJ);
+malha_basica;1;1;municipio;5101837;Boa Esperança do Norte/MT;;;88054;CR-NMT;Malha básica: município novo (instalado em 01/01/2025), sem cobertura na malha de área de atuação — imputação manual (CR-NMT, único critério geográfico disponível: municípios vizinhos);

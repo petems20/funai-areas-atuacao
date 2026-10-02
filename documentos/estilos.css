@@ -1,0 +1,27 @@
+/* Legenda da figura */
+.figure-caption {
+  caption-side: top;
+  text-align: left;
+  margin-bottom: 0.8rem;
+}
+
+/* Prefixo: Figura 1 */
+.figure-caption::first-line {
+  font-weight: normal;
+}
+
+/* Ajusta todo o texto da legenda */
+.figure-caption {
+  font-weight: normal;
+  text-transform: none;
+}
+
+/* Prefixo gerado pelo Quarto */
+.figure-caption .quarto-figure-caption {
+  font-weight: normal;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+}

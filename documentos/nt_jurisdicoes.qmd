@@ -1,0 +1,983 @@
+---
+title: "Áreas de Atuação das Coordenações Regionais: Uma proposta de territorialização para a Funai"
+author: "Pedro Santos, Artur Mendes, Eduardo Silva"
+bibliography: referencias.bib
+
+execute:
+  execute-dir: project
+  warning: false
+
+format:
+  # pdf:
+  #   fig-cap-location: top
+  #   fig-subcap-location: top
+  #   fig-width: 10
+  #   fig-height: 8
+  html:
+    css: estilos.css
+    fig-cap-location: top
+    fig-subcap-location: top
+    fig-width: 10
+    fig-height: 8
+    embed-resources: true
+
+lang: pt-BR
+reference-section-title: "Referências"
+---
+
+```{r}
+#| include: false
+# Mantém absolutos os caminhos de imagem passados a knitr::include_graphics() (ver layout_qgis()
+# abaixo): o documento executa a partir da raiz do projeto, e o caminho relativo que o knitr
+# calcularia não existiria a partir dela.
+options(knitr.graphics.rel_path = FALSE)
+
+tabela_nt <- function(
+    dados,
+    titulo,
+    legenda,
+    fonte,
+    col.names = NULL,
+    align = NULL,
+    format = NULL   # <- NOVO: "n" ou "p"
+) {
+
+  if (!is.null(col.names)) {
+    names(dados) <- col.names
+  }
+
+  tab <- gt::gt(dados) |>
+    gt::tab_options(table.align = "left") |>
+    gt::tab_header(title = gt::html(
+      paste0(
+        "<div style='text-align:left; font-weight:400;'>",
+        toupper(titulo),
+        "</div>"
+      )
+    ),
+    subtitle = gt::html(
+      paste0(
+        "<div style='text-align:left; font-weight:700;'>",
+        legenda,
+        "</div>"
+      )
+    )) |>
+    gt::tab_source_note(source_note = fonte)
+
+  # -----------------------------
+  # alinhamento seguro
+  # -----------------------------
+  if (!is.null(align)) {
+
+    align_map <- c(
+      "l" = "left",
+      "c" = "center",
+      "r" = "right"
+    )
+
+    for (i in seq_along(align)) {
+      tab <- tab |>
+        gt::cols_align(
+          align = align_map[[align[i]]],
+          columns = names(dados)[i]
+        )
+    }
+  }
+
+  # -----------------------------
+  # formatação controlada por coluna
+  # -----------------------------
+  if (!is.null(format)) {
+
+    for (i in seq_along(format)) {
+
+      col <- names(dados)[i]
+
+      if (format[i] == "n") {
+
+        tab <- tab |>
+          gt::fmt_number(
+            columns = col,
+            decimals = 0,
+            sep_mark = ".",
+            dec_mark = ","
+          )
+
+      } else if (format[i] == "p") {
+
+        tab <- tab |>
+          gt::fmt_number(
+            columns = col,
+            decimals = 1,
+            suffixing = FALSE,
+            pattern = "{x}%",
+            dec_mark = ","
+          )
+      }
+    }
+  }
+
+  tab
+}
+
+grafico_nt <- function(
+    plot,
+    figura = NULL,
+    titulo = NULL,
+    subtitulo = NULL,
+    fonte = NULL,
+    cor_figura = "black"
+) {
+
+  if (is.null(titulo)) {
+    titulo <- plot$labels$title
+  }
+
+  if (is.null(subtitulo)) {
+    subtitulo <- plot$labels$subtitle
+  }
+
+  if (is.null(fonte)) {
+    fonte <- plot$labels$caption
+  }
+
+  fig_label <- if (!is.null(figura)) {
+    paste0(
+      "<span style='color:",
+      cor_figura,
+      "; font-weight:400;'>Figura ",
+      figura,
+      "</span>"
+    )
+  } else {
+    NULL
+  }
+
+  final_title <- if (!is.null(fig_label)) {
+    paste0(fig_label, "<br>", titulo)
+  } else {
+    titulo
+  }
+
+  plot <- plot +
+    ggplot2::labs(
+      title = final_title,
+      subtitle = subtitulo,
+      caption = fonte
+    ) +
+    ggplot2::theme(
+      plot.title = ggtext::element_markdown(
+        hjust = 0,
+        face = "plain",
+        lineheight = 1.2
+      ),
+      plot.subtitle = ggplot2::element_text(hjust = 0),
+      plot.caption = ggplot2::element_text(hjust = 0)
+    )
+
+  plot
+}
+
+limpa_figura <- function(plot){
+
+  return(plot +
+    ggplot2::labs(
+      title = NULL,
+      subtitle = NULL
+    ))
+
+}
+
+obter_legenda <- function(plot) {
+
+  titulo <- plot$labels$title
+  subtitulo <- plot$labels$subtitle
+
+  paste0(
+    "**", titulo, "**\n\n",
+    subtitulo
+  )
+}
+
+# Nome completo de cada CR, usado na primeira citação da sigla no documento (Tabela 1); nas demais
+# citações usa-se só a sigla.
+NOMES_CR <- c(
+  "CR-ALSE" = "Coordenação Regional Alagoas e Sergipe",
+  "CR-ANP" = "Coordenação Regional Amapá e Norte do Pará",
+  "CR-Apur" = "Coordenação Regional Alto Purus",
+  "CR-AS" = "Coordenação Regional do Alto Solimões",
+  "CR-ATO" = "Coordenação Regional Araguaia Tocantins",
+  "CR-BSF" = "Coordenação Regional Baixo São Francisco",
+  "CR-BTO" = "Coordenação Regional do Baixo Tocantins",
+  "CR-CAC" = "Coordenação Regional de Cacoal",
+  "CR-CEPIRN" = "Coordenação Regional Ceará, Piauí e Rio Grande do Norte",
+  "CR-CGB" = "Coordenação Regional de Cuiabá",
+  "CR-CGR" = "Coordenação Regional Campo Grande",
+  "CR-CLPA" = "Coordenação Regional Centro Leste do Pará",
+  "CR-DOU" = "Coordenação Regional Dourados",
+  "CR-GJM" = "Coordenação Regional de Guajará-Mirim",
+  "CR-GPV" = "Coordenação Regional Guarapuava",
+  "CR-INTS" = "Coordenação Regional Interior Sul",
+  "CR-JPA" = "Coordenação Regional João Pessoa",
+  "CR-JPR" = "Coordenação Regional de Ji-Paraná",
+  "CR-JUR" = "Coordenação Regional do Juruá",
+  "CR-KSPA" = "Coordenação Regional Kayapó Sul do Pará",
+  "CR-LIS" = "Coordenação Regional Litoral Sul",
+  "CR-Lise" = "Coordenação Regional Litoral Sudeste",
+  "CR-MA" = "Coordenação Regional Maranhão",
+  "CR-MAD" = "Coordenação Regional Madeira",
+  "CR-MAO" = "Coordenação Regional de Manaus",
+  "CR-MGES" = "Coordenação Regional de Minas Gerais e Espírito Santo",
+  "CR-MJur" = "Coordenação Regional Médio Juruá",
+  "CR-MPur" = "Coordenação Regional Médio Purus",
+  "CR-NMT" = "Coordenação Regional Norte do Mato Grosso",
+  "CR-NOMT" = "Coordenação Regional Noroeste do Mato Grosso",
+  "CR-PE" = "Coordenação Regional Pernambuco",
+  "CR-PFD" = "Coordenação Regional Passo Fundo",
+  "CR-PP" = "Coordenação Regional Ponta Porã",
+  "CR-RC" = "Coordenação Regional Ribeirão Cascalheira",
+  "CR-RNG" = "Coordenação Regional do Rio Negro",
+  "CR-RR I" = "Coordenação Regional Roraima I",
+  "CR-SBA" = "Coordenação Regional Sul da Bahia",
+  "CR-TPJ" = "Coordenação Regional Alto e Médio Tapajós",
+  "CR-VJ" = "Coordenação Regional do Vale do Javari",
+  "CR-XAV" = "Coordenação Regional Xavante",
+  "CR-XIN" = "Coordenação Regional Xingu"
+)
+
+# "Nome completo (SIGLA)" para siglas conhecidas; demais valores ficam como estão.
+expandir_sigla <- function(x) {
+  ifelse(x %in% names(NOMES_CR), paste0(NOMES_CR[x], " (", x, ")"), x)
+}
+
+# Localiza, no vetor de arquivos exportados pelo alvo `layouts_qgis_aacr`, a(s) página(s) de um
+# layout específico do QGIS (por nome exato, ex.: "Demonstrativo Malha Básica SC") -- opcionalmente
+# apenas a página geral (a primeira, sem sufixo "_N"), usada para as malhas intermediárias que só
+# entram no relatório na visão de Brasil inteiro, sem enfoque regional.
+layout_qgis <- function(layouts, nome, apenas_geral = FALSE) {
+  # exportar_layouts_qgis.py remove acentos do nome do layout ao montar o nome do arquivo
+  # (slugify()), então a busca precisa comparar sem acentos também.
+  nome_sem_acento <- iconv(nome, to = "ASCII//TRANSLIT")
+  arquivos <- layouts[grepl(paste0("^", nome_sem_acento, "(_\\d+)?\\.png$"), basename(layouts))]
+  arquivos <- arquivos[order(nchar(arquivos))]
+  if (apenas_geral) arquivos <- arquivos[1]
+  # Caminho absoluto: o documento executa a partir da raiz (_quarto.yml), mas o Quarto resolve
+  # caminhos relativos de imagem a partir da pasta do documento.
+  normalizePath(arquivos, winslash = "/")
+}
+```
+
+# Sumário Executivo
+
+Trata-se de nota técnica destinada à apresentação de subsídios iniciais para a revisão e ampliação do escopo da Portaria nº 1.491/2011, publicada em separata no Boletim de Serviço da Funai, que dispõe sobre a área de atuação das unidades descentralizadas em relação às Terras Indígenas (TIs) demarcadas.
+
+A necessidade de revisão da referida Portaria decorre de sua defasagem em relação à estrutura administrativa atualmente vigente, especialmente após a reestruturação da Funai estabelecida pelo Decreto nº 12.581/2025, que alterou o Decreto nº 11.226/2022. Registra-se, ainda, que os recortes territoriais definidos pela Portaria nº 1.491/2011 não abrangem integralmente o território nacional, deixando áreas sem vinculação formal a unidades regionais específicas.
+
+O objetivo consiste em apresentar uma proposta preliminar de territorialização do atendimento prestado pelas Coordenações Regionais (CRs), de modo a cobrir todo o território nacional, com a definição dos polígonos de atuação a partir da divisão político-administrativa e da vinculação atualmente existente das TIs.
+
+Para tanto, a presente nota técnica propõe diretrizes para o processo inicial de territorialização, como o estabelecimento dos setores censitários, definidos pelo Instituto Brasileiro de Geografia e Estatística (IBGE), como unidade máxima de desagregação espacial para os recortes definidos. A abordagem por setores censitários possibilitou o aproveitamento das informações produzidas no âmbito do Censo e conferiu um referencial flexível para a definição das geometrias territoriais que delimitam os polígonos de atuação.
+
+Além disso, a proposta foi adaptada para incorporar as diretrizes estabelecidas pela Diretoria Colegiada em reunião de apresentação realizada no dia 28/07/2026, que definiu que as áreas de atuação seriam definidas por **Municípios** e **Terras Indígenas, salvo exceções**.
+
+Vale mencionar que entre as diretrizes dadas ao Grupo de Trabalho da última reestruturação (2024) estava a definição de polígonos de atuação, incorporando a divisão político-administrativa em lugar da jurisdição definida exclusivamente em relação às TIs. Essa definição não chegou a ser concluída.
+
+O trabalho considerou como restrição a estrutura e localização atual das unidades regionais existentes.
+
+Ressalta-se que a proposta ora apresentada constitui mero ponto de partida. Outros critérios não contemplados na metodologia poderão ser incorporados em etapas posteriores, mediante análise técnica, validação institucional e participação dos atores envolvidos.
+
+# Introdução
+
+O estabelecimento de áreas de atuação para as unidades regionais se insere no contexto da territorialização de políticas públicas, que considera o território, definido com base em múltiplas dimensões, como espaço de mediação social e incidência de políticas públicas. Sob essa perspectiva, o território constitui um espaço estratégico de mediação entre Estado e sociedade, no qual se materializam as ações governamentais e se expressam as demandas e especificidades das populações [@silva2012paradigma]. Nesse contexto, a organização da atuação indigenista em áreas de atuação territorialmente definidas revela-se como um esforço em busca de maior racionalidade, eficiência e equidade na atuação institucional.
+
+A territorialização constitui um dos pilares organizativos da Atenção Primária à Saúde no Brasil, especialmente por meio da Estratégia Saúde da Família (ESF), que estrutura a atuação das equipes a partir de territórios e populações adscritas. Esse modelo permite o acompanhamento longitudinal da população, a responsabilização sanitária por uma base territorial definida e a incorporação das especificidades sociais, econômicas, culturais e epidemiológicas locais ao planejamento das ações [@Brasil2011Portaria2488].
+
+O território, nessa perspectiva, não é apenas um espaço físico de repartição administrativa, mas um território usado, vivido e conformado pelas relações sociais que nele se estabelecem, cujo reconhecimento qualifica o diagnóstico e a intervenção institucional [@monken2005territorio]. Ao possibilitar maior conhecimento das condições de vida e dos determinantes sociais da saúde presentes no território, a territorialização favorece intervenções mais adequadas às necessidades da comunidade e fortalece a capacidade de resposta dos serviços de saúde aos processos de saúde-doença [@colussi_pereira_2016], sustentando ainda estratégias de regionalização que articulam redes de serviços a partir das dinâmicas locais de desenvolvimento [@ribeiro2015perspectiva].
+
+Tal abordagem territorial também é utilizada no contexto dos povos indígenas no âmbito do Subsistema de Atenção à Saúde Indígena (SasiSUS), por meio da definição dos Distritos Sanitários Especiais Indígenas (DSEI), instituídos pela Política Nacional de Atenção à Saúde dos Povos Indígenas [@funasa2000pnaspi]. Esses distritos constituem um modelo de organização dos serviços orientado para um espaço etno-cultural, geográfico, populacional e administrativo delimitado, considerando as especificidades dos povos indígenas e visando uma atenção à saúde mais qualificada.
+
+O Sistema de Informação da Atenção à Saúde Indígena (SIASI), utilizado pelos DSEI para o acompanhamento da população aldeada, permite observar a evolução recente desse contingente:
+
+```{r}
+#| echo: false
+#| fig-cap: "Figura 1: População Indígena em Terras Indígenas (2020-2026): Série histórica da população indígena aldeada, segundo o SIASI"
+
+limpa_figura(targets::tar_read(grafico_pi_siasi))
+```
+
+A linha tracejada no gráfico marca a concessão de medida cautelar, no âmbito da ADPF 709, pelo ministro Luís Roberto Barroso, em 8 de julho de 2020. No contexto da pandemia de Covid-19, a medida determinou que os serviços do SasiSUS fossem acessíveis a todos os indígenas aldeados, independentemente da homologação de suas terras ou reservas, e aos indígenas não aldeados quando não houvesse disponibilidade do SUS geral. A decisão foi posteriormente referendada pelo Plenário do Supremo Tribunal Federal em 5 de agosto de 2020 [@stf2020adpf709].
+
+Após a queda observada entre 2020 e 2021, a população adscrita atendida pelo SasiSUS apresenta trajetória de crescimento contínuo, alcançando 839.459 pessoas em 2026, 9,3% acima do patamar de 2021. Esse aumento pode estar associado tanto à ampliação da cobertura do SasiSUS no contexto da ADPF 709 quanto à dinâmica demográfica da população atendida. Isoladamente, contudo, a série não permite identificar a contribuição relativa desses fatores.
+
+A definição territorial dos DSEI considera critérios como população, área geográfica, perfil epidemiológico, disponibilidade de serviços, recursos humanos e infraestrutura, vias de acesso à rede local e regional do SUS, relações sociais entre povos indígenas e sociedade envolvente, além da distribuição demográfica tradicional dos povos indígenas, que nem sempre coincide com os limites de estados e municípios.
+
+Sob essa perspectiva, a territorialização favorece a cobertura de populações indígenas não residentes em TIs delimitadas, incluindo indígenas em contexto urbano e grupos que reivindicam o reconhecimento de territórios tradicionais ainda não regularizados, mitigando riscos de sobreposição ou ausência de vinculação institucional clara.
+
+Espera-se que os resultados do presente esforço de territorialização constituam um instrumento estratégico para o planejamento e a alocação de recursos humanos e orçamentários, promovendo maior racionalidade administrativa e favorecendo a institucionalização de práticas, procedimentos e diretrizes de atuação da Funai.
+
+As áreas de atuação das Coordenações Regionais são concebidas como recortes territoriais que, em conjunto, asseguram a cobertura integral do território nacional. Sua definição deve ser baseada em critérios técnico-operacionais, socioculturais e institucionais, considerando as dinâmicas territoriais e étnicas dos povos indígenas.
+
+# Situação Atual da Vinculação Territorial na Funai
+
+Atualmente, a atuação territorial da Funai está estruturada, em grande medida, a partir da vinculação administrativa de TIs às Coordenações Regionais, conforme registrado no Sistema de Informações Indigenistas (SII). Esse arranjo permite identificar a unidade responsável pelo acompanhamento institucional de cada TI e constitui uma referência para a organização territorial das ações do órgão.
+
+A Tabela 1 detalha essa vinculação, apresentando o número de TIs sob responsabilidade de cada CR, desagregado por fase do procedimento administrativo de demarcação. A coluna "Em Estudo" inclui tanto as TIs que já possuem um polígono preliminar quanto as que ainda contam apenas com portaria de constituição de Grupo Técnico, sem delimitação geométrica alguma; pedidos de reestudo de TIs já delimitadas em fase mais avançada não são somados nessa coluna, para não contabilizar a mesma TI duas vezes.
+
+```{r}
+#| echo: false
+tabela_nt(
+  dados = targets::tar_read(tabela_ti_por_fase_cr) |>
+    dplyr::mutate(Sigla = expandir_sigla(Sigla)) |>
+    dplyr::rename(`Coordenação Regional` = Sigla),
+  titulo = "Tabela 1",
+  legenda = "Número de Terras Indígenas por Coordenação Regional, segundo a vinculação no SII, desagregado por fase do procedimento de demarcação.",
+  fonte = "Fonte: Sistema de Informações Indigenistas (SII), Funai. Inclui terras indígenas ainda sem delimitação geométrica (portarias de constituição de Grupo Técnico).",
+  align = c("l", "c", "c", "c", "c", "c", "c", "c"),
+  format = c("n","n","n","n","n","n","n","n")
+)
+```
+
+Os dados do Censo 2022 mostraram que 36,7% da população indígena brasileira reside em TIs declaradas. Essa distribuição apresenta diferenças significativas entre as regiões do país: Centro-Oeste e Sul concentram as maiores proporções relativas de população indígena residente em TIs, enquanto Nordeste e Sudeste apresentam proporções menores. Em termos absolutos, as regiões Norte, Nordeste e Sudeste concentram os maiores contingentes de população indígena residente fora de TIs.
+
+```{r}
+#| echo: false
+tabela_nt(
+  dados = targets::tar_read(pop_indigena_regiao),
+  titulo = "Tabela 2",
+  legenda = "População indígena total, em terras indígenas e fora de terras indígenas por Grande Região. Brasil, 2022.",
+  fonte = "Fonte: Censo Demográfico 2022, IBGE.",
+  col.names = c(
+    "Grande Região",
+    "Total",
+    "Em terras indígenas",
+    "Fora de terras indígenas",
+    "% em terras indígenas"
+  ),
+  align = c("l", "c", "c", "c", "c"),
+  format = c("n","n","n","n","p")
+)
+```
+
+Para a população residente em TIs, os resultados do universo divulgados no âmbito do Censo de 2022 permitem visualizar a distribuição da população por Terra, conforme as vinculações atualmente disponíveis no SII. Observa-se, na Figura 2, que as CRs de Roraima, Alto Solimões e Maranhão concentram os maiores quantitativos de população indígena, ao passo que as CRs Madeira, Cacoal e Ji-Paraná apresentam os menores valores.
+
+```{r}
+#| echo: false
+#| fig-cap: "Figura 2: População Indígena em Terras Indígenas por Coordenação Regional, segundo a vinculação no SII"
+
+limpa_figura(targets::tar_read(grafico_populacao_sii))
+```
+
+Além disso, uma estimativa realizada a partir dos resultados agregados por setor censitário possibilita uma aproximação do número de indígenas nas terras atualmente delimitadas, complementando os resultados do universo, que até então se restringiam às terras declaradas, homologadas, regularizadas ou encaminhadas como Reservas Indígenas até 31 de julho de 2022, data de referência da pesquisa censitária. Essa estimativa considera um setor censitário como parte da TI quando ao menos 90% de sua área está contida nela. Adota-se um limiar elevado para produzir uma estimativa conservadora, evitando atribuir população à TI a partir de setores apenas marginalmente sobrepostos a ela. Com isso, as CRs Sul da Bahia e Rio Negro apresentam contingentes populacionais significativamente maiores, alcançando 23.806 e 25.738 pessoas indígenas, respectivamente.
+
+A descentralização de políticas públicas voltadas aos povos indígenas e a progressiva transferência de competências da Funai para a administração direta contribuíram para consolidar as TIs como eixo estruturante e lócus primordial da atuação institucional da Funai (@Albert2001 apud @Stibich2019). Embora esse modelo tenha pautado historicamente o planejamento e a gestão das ações da política indigenista, os resultados do Censo Demográfico de 2022 evidenciam que a maior parte do público-alvo reside fora de territórios oficialmente reconhecidos, revelando o esgotamento e as limitações dessa abordagem.
+
+Para a população indígena domiciliada fora de TIs, a Tabela 3 apresenta a distribuição por situação do domicílio, revelando predominância do meio urbano em todas as regiões (78,8% no Brasil), especialmente no Sudeste (91,9%) e no Centro‑Oeste (86,3%). Ainda assim, observa‑se participação relativa mais elevada da população rural no Sul (25,7%), no Nordeste (25,0%) e no Norte (21,8%), contrastando com os menores percentuais observados no Sudeste (8,1%) e no Centro‑Oeste (13,7%).
+
+```{r}
+#| echo: false
+tabela_nt(
+  dados = targets::tar_read(pop_indigena_fora_ti_situacao),
+  titulo = "Tabela 3",
+  legenda = "População indígena fora de Terras Indígenas segundo situação do domicílio (urbana e rural) por Grande Região. Brasil, 2022.",
+  fonte = "Fonte: Censo Demográfico 2022, IBGE.",
+  col.names = c(
+    "Grande Região",
+    "Total",
+    "Urbana",
+    "Rural"
+  ),
+  align = c("l", "c", "c", "c"),
+  format = c("n","n","n","n")
+)
+```
+
+É importante ressaltar que a população indígena residente fora de TIs concentra-se majoritariamente em áreas urbanas e não se distribui de forma homogênea nesses espaços. Sua inserção urbana caracteriza-se por diferentes padrões de concentração espacial, mobilidade e permanência, associados a contextos distintos de oferta de infraestrutura, serviços públicos e oportunidades econômicas. Assim, parte dessa população reside em áreas com menor disponibilidade desses recursos, enquanto outra parcela se encontra em grandes centros urbanos, onde essa oferta tende a ser mais ampla, embora persistam desigualdades e processos de segregação socioespacial.
+
+Apesar dessa magnitude, a ausência de políticas públicas diferenciadas para a população indígena em contexto urbano permanece um desafio recorrente, evidenciado inclusive durante a pandemia de Covid-19, quando indígenas residentes em áreas urbanas e em terras não regularizadas tiveram negado o direito de prioridade na vacinação [@castilho2023invisibilidade]. A ausência de uma unidade regional claramente responsável por essa população agrava esse quadro, na medida em que dificulta a identificação de quem deve articular, monitorar e responder pelas demandas desse contingente.
+
+Enquanto alguns grupos mantêm vínculos contínuos com suas terras tradicionalmente ocupadas e permanecem nas cidades apenas temporariamente, seja para acessar serviços públicos, seja em razão de pressões, conflitos e condições de insegurança que incidem sobre seus territórios de origem, frequentemente associados a processos de reivindicação e retomada, outros acabam se estabelecendo de forma mais duradoura. Nesses casos, podem consolidar novas territorialidades e formas de organização comunitária no espaço urbano, que coexistem com referências identitárias e laços históricos com seus povos e territórios de origem.
+
+Corroborando essa perspectiva, um estudo com indígenas do Vale do Javari em Atalaia do Norte (AM) demonstra que a presença urbana não rompe os vínculos com a TI. O deslocamento à cidade é motivado pela busca por saúde, educação e serviços, enquanto a aldeia mantém sua centralidade pelos recursos, alimentação e laços socioculturais. Trata-se de uma territorialidade articulada por fluxos de mobilidade, superando a visão de migração linear ou abandono do território [@reis2020entre].
+
+Embora não formalizada em atos normativos ou registrada em um sistema estruturante, parte do arranjo de atuação das CRs em relação aos municípios pode ser levantada em documentos ou no próprio endereço eletrônico oficial da Funai na internet. No âmbito do processo SEI n° 08620.010286/2021-89, as próprias Coordenações Regionais declararam os municípios sob seu atendimento, totalizando 681 municípios vinculados a 38 CRs, que concentram 744.699 pessoas indígenas fora de TIs (Censo 2022) -- o equivalente a 69,5% da população indígena fora de TIs no país (1.071.992 pessoas).
+
+Complementarmente, o levantamento de informações disponíveis no endereço eletrônico oficial da Funai identificou outros 62 municípios, vinculados a 13 CRs, sem correspondência no processo SEI, concentrando 35.326 pessoas indígenas fora de TIs. No total, essas duas fontes já cobrem 743 municípios vinculados a 39 CRs, concentrando 72,8% da população indígena fora de TIs, o que indica que, combinadas, elas acompanham razoavelmente a distribuição real dessa população, ainda que de forma não exaustiva.
+
+Cabe registrar que, nessas duas fontes combinadas, 49 municípios foram declarados por mais de uma CR simultaneamente. A Figura a seguir mapeia essas sobreposições. Já a figura seguinte sobrepõe as duas dimensões num único mapa: a concentração indígena por município (Censo 2022), as localidades indígenas mapeadas pelo IBGE em amarelo e, com contorno em destaque, os municípios com população indígena que **nenhuma** CR declarou atender, a lacuna institucional mais relevante para o presente estudo.
+
+```{r}
+#| echo: false
+#| fig-cap: "Figura 3: Sobreposição de Declarações de Atendimento por Município: municípios declarados por mais de uma Coordenação Regional (processo SEI n° 08620.010286/2021-89 e site institucional)"
+
+limpa_figura(targets::tar_read(grafico_sobreposicao_municipios_declarados))
+```
+
+```{r}
+#| echo: false
+#| fig-cap: "Figura 4: Concentração Indígena e Carência de Atendimento Declarado por CR: população indígena por município (Censo 2022) e localidades indígenas (IBGE); contorno em destaque = município com PI sem nenhuma CR declarada (processo SEI n° 08620.010286/2021-89 e site institucional da Funai)"
+
+limpa_figura(targets::tar_read(grafico_pi_carencia_atendimento))
+```
+
+A figura a seguir consolida essas duas vinculações já institucionalizadas -- TIs pelo SII e municípios pela declaração de atendimento, resolvendo sobreposições a favor da declaração mais recente -- e mapeia a jurisdição atual de cada Coordenação Regional. As áreas em cinza indicam território sem nenhuma vinculação institucional vigente, evidenciando a extensão da lacuna que esta proposta busca preencher.
+
+```{r}
+#| echo: false
+#| fig-cap: "Figura 5: Jurisdição Atual por Coordenação Regional: vinculação institucional vigente (Terras Indígenas pelo SII; municípios pela declaração de atendimento via processo SEI/site institucional); em cinza, território sem CR atualmente vinculada"
+
+knitr::include_graphics(layout_qgis(targets::tar_read(layouts_qgis_aacr), "Demonstrativo Jurisdição Atual", apenas_geral = TRUE))
+```
+
+Nos contextos rurais, embora representem uma parcela minoritária dos indígenas que vivem fora de TIs (21,2%), esses grupos frequentemente estão inseridos em localidades com restrições de infraestrutura, mobilidade e oferta regular de serviços públicos. Essas condições podem ampliar demandas por ações de saúde, educação, proteção social e segurança alimentar, cuja implementação depende da articulação entre diferentes níveis de governo e da capacidade operacional das autoridades locais. Os dados da Pesquisa de Informações Básicas Municipais (Munic) evidenciam uma baixa institucionalização de políticas municipais específicas para povos indígenas. Dos 1.331 municípios que dispõem de órgão gestor da política de promoção da igualdade racial, apenas 379 declararam executar programas e/ou ações voltados à população indígena [@ibge2024munic].
+
+A essa fragilidade institucional no nível municipal soma-se uma lacuna equivalente do lado da própria Funai: municípios com presença indígena registrada, mas ainda não formalmente declarados por nenhuma CR, permanecem sem vinculação institucional explícita. Em muitos casos, remanescem ainda dúvidas sobre a competência de atuação das Coordenações Regionais em relação a determinados povos e territórios. São justamente essas carências — destacadas na figura acima e observadas no cotidiano da atuação das Coordenações Regionais — que evidenciam como a definição precisa de áreas de atuação tende a agregar maior valor à atuação institucional.
+
+Sob a perspectiva do planejamento, a reconfiguração territorial com abrangência nacional pode ampliar significativamente a qualidade do diagnóstico realizado pelas unidades descentralizadas, permitindo identificar com maior precisão seus gargalos, potencialidades e demandas específicas. Ao estruturar essa visão integrada, torna-se possível desenvolver indicadores consistentes apoiados em dados georreferenciados e em sistemas de monitoramento contínuo, fortalecendo a longitudinalidade, qualificando a tomada de decisão e propiciando uma alocação mais eficiente e orientada de recursos orçamentários. Em suma, possibilita-se um maior alinhamento das prioridades institucionais às necessidades reais das populações em seus territórios.
+
+Nesses termos, a proposta ora apresentada não pretende substituir a vinculação administrativa das TIs já registrada no SII, mas sim contribuir para sua revisão e oferecer uma referência territorial complementar, alinhada à divisão político-administrativa brasileira, capaz de aprimorar os processos de planejamento, coordenação institucional e distribuição de responsabilidades no âmbito da Fundação. Ao estabelecer uma unidade regional inequívoca para a associação de cada demanda da política indigenista, cria-se uma base mais consistente para o fortalecimento da governança territorial da Funai.
+
+## Dados e Metodologia
+
+Para o esboço da proposta inicial de territorialização, com a definição dos polígonos correspondentes às áreas de atuação de cada CR, buscou-se manter coerência com outras divisões territoriais utilizadas pelo Estado, notadamente a divisão político-administrativa, conforme diretriz anteriormente estabelecida pela Diretoria Colegiada.
+
+Nesse sentido, estabeleceu-se inicialmente como diretriz central para a construção da proposta que os setores censitários constituam o maior nível possível de desagregação na definição dos recortes territoriais, de modo a aproveitar sua função como unidade territorial básica de coleta, organização logística e divulgação dos resultados do Censo Demográfico. Busca-se, assim, viabilizar a utilização direta dos resultados do levantamento censitário nos agrupamentos de setores vinculados a uma unidade regional específica.
+
+De acordo com o @ibge2024agregados, o Setor Censitário é a menor unidade territorial, formada por área contínua, integralmente contida em área urbana ou rural, com dimensão adequada à operação de pesquisas e cujo conjunto esgota a totalidade do território nacional, o que permite assegurar a plena cobertura do país. É a principal unidade territorial de coleta e divulgação de dados estatísticos do Instituto, definida em consonância com a organização político-administrativa do País e com metodologias de classificação territorial que permitem diferenciar padrões de ocupação e distribuição das edificações, além de possibilitar maior detalhamento espacial dos resultados. A malha atual divulgada pelo IBGE é composta por 468.097 setores censitários [@ibge2024malha]. Os arquivos vetoriais dessa malha trazem ainda duas áreas operacionais, referentes à Lagoa dos Patos e à Lagoa Mirim (RS), que não constituem setores censitários: não pertencem a nenhum município nem têm população, mas cobrem cerca de 13,1 mil km² do território nacional. Por isso, essas duas feições entram nos totais de área e aparecem como duas unidades adicionais na contagem da Tabela 5 (468.099).
+
+A proposta apresentada nesta nota técnica adotou inicialmente os setores censitários como base para a constituição dos polígonos de atuação de cada CR. Essa abordagem foi adaptada para os recortes territoriais posteriormente definidos pela Diretoria Colegiada.
+
+Os dados utilizados na operacionalização da metodologia, assim como na demonstração das potencialidades foram extraídos das seguintes fontes:
+
+- Resultados Agregados por Setor Censitário do Censo de 2022;
+
+- Sistema de Recuperação Automática (SIDRA);
+
+- Geoserver da Fundação Nacional dos Povos Indígenas;
+
+- Sistema de Organização e Inovação Institucional do Governo Federal – SIORG;
+
+- Malha de Setores Censitários e Divisão Territorial Brasileira, IBGE;
+
+- Localidades Indígenas, IBGE;
+
+- Sistema Integrado de Orçamento e Planejamento (SIOP);
+
+- Banco de Dados de Queimadas (BDQUEIMADAS), Instituto Nacional de Pesquisas Espaciais (INPE);
+
+- Cadastro Único para Programas Sociais, via plataforma VisData, do Ministério do Desenvolvimento Social e Combate à Fome (MDS);
+
+- OpenStreetMap (malha viária); e
+
+- Agência Nacional de Transportes Aquaviários (ANTAQ), para vias navegáveis.
+
+Os dados georreferenciados das unidades regionais foram obtidos a partir da geocodificação dos endereços registrados no SIORG, por meio do pacote computacional *geocodebr [@geocodebr]*, desenvolvido em linguagem R. O *geocodebr* realiza a correspondência dos endereços de entrada diretamente na base do Cadastro Nacional de Endereços para Fins Estatísticos (CNEFE) do IBGE, permitindo a obtenção de coordenadas geográficas com relativa precisão e elevada escalabilidade de processamento. A precisão dos resultados obtidos varia conforme a exatidão do endereço de *input* e seu nível de correspondência na base do CNEFE, podendo ser classificada em categorias de exatidão que refletem desde a localização precisa do logradouro até a aproximação pelo centroide da face ou do setor censitário.
+
+A Tabela 4 resume a precisão obtida na geocodificação dos endereços das CRs (excluídas as Unidades Técnicas Locais, UTLs).
+
+```{r}
+#| echo: false
+tabela_nt(
+  dados = targets::tar_read(tabela_geocode_precisao_cr),
+  titulo = "Tabela 4",
+  legenda = "Precisão da geocodificação dos endereços das Coordenações Regionais, por categoria do geocodebr.",
+  fonte = "Fonte: geocodebr/CNEFE (IBGE), a partir dos endereços do SIORG.",
+  align = c("l", "c", "c", "c"),
+  format = c("n","n","p","n")
+)
+```
+
+A metodologia de territorialização consiste em atribuir cada setor censitário a uma CR, privilegiando-se o critério de facilidade de acesso. A atribuição segue uma lógica algorítmica na qual a CR mais acessível é aquela cujo trajeto em relação ao centro geométrico do setor censitário apresenta a menor duração. Os dados de duração e distância dos trajetos são obtidos por meio de um algoritmo de planejamento de rota denominado Open Source Routing Machine (OSRM), operacionalizado mediante uma biblioteca em R que permite a interface com a API do sistema *demo* de roteamento [@project-osrm; @osrm]. O uso do servidor *demo* foi suficiente para os fins deste estudo por se tratar de um cálculo pontual, realizado em lotes de requisição uma única vez para consolidar a matriz de distâncias entre setores censitários e sedes de CR, e não de uma dependência em operação contínua.
+
+O OSRM permite o cálculo de rotas para diferentes modais de transporte, incluindo automóvel, bicicleta e deslocamento a pé. No entanto, para a região Norte, notadamente no estado do Amazonas, onde o acesso a diversas localidades ocorre exclusivamente por vias fluviais ou aéreas, a aplicação direta desse algoritmo não se mostra adequada. Nesses casos, a atribuição foi realizada por meio de uma metodologia algorítmica específica, descrita em detalhe nas seções subsequentes.
+
+Em razão da coincidência de endereço com a CR-RR I, a Coordenação Regional Roraima II (CR-RR II) foi desconsiderada na operacionalização do algoritmo, tendo em vista o risco provável de comprometimento dos resultados na execução com pontos coincidentes. Portanto, a área de atuação da CR-RR I compreende a futura área de atuação da CR-RR II.
+
+# Fluxo Lógico do Algoritmo
+
+O fluxo lógico computacional foi estruturado nas seguintes etapas:
+
+**Importação e Tratamento Vetorial:** importação, tratamento e padronização dos dados tabulares e das malhas utilizadas;
+
+**Geocodificação e Extração de Coordenadas:** transformação de endereços institucionais registrados no SIORG em pontos geográficos;
+
+**Roteamento Logístico:** cálculo matricial de distâncias e tempos de viagem entre cada um dos 468.097 setores censitários e as CRs, sendo aplicado um algoritmo diferente do OSRM para a região Norte;
+
+**Atribuição Algorítmica:** vinculação de cada setor censitário à CR mais acessível, com base no menor tempo de deslocamento estimado. O procedimento assegura a exclusividade da atribuição, de modo que cada setor é designado a apenas uma unidade regional;
+
+**Correção Topológica:** resolução de enclaves administrativos e ilhas espaciais por meio de um algoritmo que realoca essas unidades à unidade regional mais próxima ou com a qual compartilham maior extensão de fronteira, assegurando a contiguidade dos polígonos finais;
+
+**Agregação:** Fusão das geometrias para gerar os polígonos finais das áreas de atuação.
+
+# Roteamento Logístico
+
+De maneira geral, a associação entre cada setor censitário e as CRs da Funai seguiu o critério de menor tempo de deslocamento. Para a maior parte do território, utilizou-se o roteamento logístico via OSRM. No entanto, em virtude das limitações geográficas intrínsecas à região Norte, caracterizada por uma extensa faixa territorial acessível exclusivamente por vias fluviais ou aéreas, desenvolveu-se um algoritmo próprio de roteamento espacial multimodal a seguir descrito, aplicado aos setores censitários contidos no polígono oficial da Amazônia Legal, delimitado pelo IBGE.
+
+Para operacionalizar essa realidade logística, o modelo espacial integrou a malha viária principal e a rede hidroviária (rios navegáveis), ambas extraídas do OpenStreetMap (extrato regional do Geofabrik), às coordenadas geográficas de instalações portuárias, disponibilizadas pela Agência Nacional de Transportes Aquaviários (ANTAQ). A partir desses dados, o algoritmo modela o deslocamento em duas etapas sequenciais para calcular o custo total de viagem:
+
+Custo de Acesso: O tempo de deslocamento a pé (assumido a uma velocidade constante de 4,5 km/h) calculado a partir do centroide geográfico do setor censitário até o nó mais próximo da infraestrutura de transporte (segmento de rodovia ou porto). O mesmo processo é aplicado para o acesso da sede da CR à malha.
+
+Custo de Rede: O tempo de trânsito estrito na malha, calculado pela busca do caminho mínimo em grafos (network routing) -- no modal rodoviário, entre os pontos de acesso à malha viária mais próximos do setor censitário e da sede da CR; no modal hidroviário, entre os portos mais próximos de cada um dos dois extremos. As velocidades médias foram parametrizadas em 20 km/h para as calhas fluviais e 60 km/h para a malha terrestre.
+
+Para evitar distorções algorítmicas e caminhos irreais, foram implementadas rigorosas travas metodológicas. Rotas baseadas em rede são sumariamente descartadas (penalizadas com tempo infinito) caso exijam uma caminhada de acesso em terreno bruto superior a 30 km, ou caso a distância total percorrida pela rede viária/hidroviária ultrapasse o triplo da distância linear entre a origem e o destino.
+
+Após o cálculo das matrizes de custo para toda a Amazônia Legal, o modelo submete cada setor censitário a uma matriz de competição sob três cenários independentes: Rodoviário, Hidroviário e Acesso Direto (distância em linha reta percorrida estritamente a pé). O algoritmo elege o cenário de menor duração de viagem, atribuindo inicialmente o setor à CR correspondente e registrando o modal de transporte mais eficiente.
+
+## Correção de Descontinuidades Territoriais
+
+Após a atribuição dos setores censitários a cada Coordenação Regional, a malha passou por uma correção para eliminar áreas isoladas ou desconectadas dentro de uma mesma jurisdição. Essa correção é aplicada depois de cada etapa de imputação e antes da exportação final dos dados.
+
+Essas áreas isoladas foram incorporadas à CR vizinha com a qual possuíam a maior extensão de fronteira, de modo a manter a continuidade territorial das áreas de atuação. Os dados de roteamento dos setores realocados também foram atualizados para refletir a nova jurisdição, garantindo que o resultado final seja uma malha territorialmente contínua.
+
+# Malha Básica
+
+A execução do algoritmo considerando puramente os aspectos de acessibilidade gera o cenário apresentado a seguir, no qual os setores censitários atribuídos a cada CR foram dissolvidos em polígonos unificados. Este mapeamento preliminar constitui a linha de base da proposta apresentada.
+
+```{r}
+#| echo: false
+#| fig-cap: "Figura 6: Malha Intermediária Gerada pela Rotina Algorítmica"
+
+knitr::include_graphics(layout_qgis(targets::tar_read(layouts_qgis_aacr), "Demonstrativo Malha Básica SC", apenas_geral = TRUE))
+```
+
+## Ajustes e Imputação Manual
+
+A partir da malha espacial básica gerada pelo algoritmo, a Coordenação-Geral de Gestão Estratégica (CGGE) conduziu uma etapa de refinamento, realizando ajustes e imputações manuais sobre setores censitários. Essa intervenção teve como propósito incorporar aspectos não capturados pela lógica estritamente computacional do algoritmo. Nesse sentido, as adequações buscaram mitigar a fragmentação territorial, priorizando a manutenção de TIs e limites estaduais sob a circunscrição de uma única CR, além de acomodar algumas dinâmicas interétnicas conhecidas e arranjos de atuação já consolidados ou sinalizados pela alta gestão. A Tabela 5, adiante, detalha a distribuição dessas imputações por critério de associação.
+
+A malha final mantém, em uma coluna de controle, o critério utilizado para atribuir cada setor à CR, permitindo distinguir as associações feitas pelo algoritmo, pela correção de áreas desconectadas e pelas imputações manuais. A figura abaixo ilustra espacialmente os critérios de associação empregados para os setores censitários, considerados isoladamente ou em conjunto.
+
+```{r}
+#| echo: false
+#| fig-cap: "Figura 7: Critérios de Associação da Malha Intermediária por Setores Censitários"
+
+knitr::include_graphics(layout_qgis(targets::tar_read(layouts_qgis_aacr), "Critérios", apenas_geral = TRUE))
+```
+
+```{r}
+#| include: false
+fmt_n <- function(x) format(round(x), big.mark = ".", decimal.mark = ",", scientific = FALSE, trim = TRUE)
+fmt_p <- function(x) format(round(x, 1), nsmall = 1, decimal.mark = ",", trim = TRUE)
+
+tab_criterios <- targets::tar_read(tabela_criterios_associacao)
+pi_setores <- tab_criterios$`População Indígena (Censo 2022)`[tab_criterios$`Critério de Associação` == "Total"]
+pi_oficial <- targets::tar_read(pop_indigena_regiao) |>
+  dplyr::filter(`Região` == "Brasil") |>
+  dplyr::pull(Total)
+pct_abaixo_oficial <- 100 * (1 - pi_setores / pi_oficial)
+```
+
+Como se observa, a maior parte das associações decorre dos critérios de menor duração de trajeto calculada pelo OSRM e das imputações manuais realizadas pela CGGE. Destacam-se, ainda, as associações definidas pelo critério de menor duração obtido pelo algoritmo específico para a Região Norte (azul-escuro) e pelo critério de realocação, que consiste na busca da menor duração de trajeto pelo OSRM desconsiderando-se a CR originalmente atribuída, de modo a selecionar a segunda melhor alternativa disponível para cada setor censitário. A Tabela 5 quantifica essa distribuição: as imputações manuais (CGGE e Grupo de Trabalho da Coordenação Regional Médio Solimões -- GT CR-MSol) somadas correspondem a `r fmt_p(attr(tab_criterios, "pct_setores_manual"))`% dos setores censitários, mas a `r fmt_p(attr(tab_criterios, "pct_area_manual"))`% da área e `r fmt_p(attr(tab_criterios, "pct_pop_manual"))`% da população indígena nacional -- uma parcela relevante da malha final.
+
+```{r}
+#| echo: false
+tabela_nt(
+  dados = tab_criterios |>
+    dplyr::mutate(`Critério de Associação` = sub("CR-MSOL", "CR-MSol", `Critério de Associação`, fixed = TRUE)),
+  titulo = "Tabela 5",
+  legenda = "Setores censitários, área e população indígena atribuídos a cada critério de associação da malha básica.",
+  fonte = paste0(
+    "Fonte: Elaboração própria (CGGE), a partir da malha de setores censitários ajustada; Censo Demográfico 2022, IBGE (agregado por setor). ",
+    "O total de 468.099 inclui as duas áreas operacionais da Lagoa dos Patos e da Lagoa Mirim, que não são setores censitários e cuja área permanece no total. ",
+    "População indígena total ", fmt_p(pct_abaixo_oficial), "% abaixo do total oficial do Censo 2022 (", fmt_n(pi_oficial),
+    ") em razão do sigilo estatístico – ver Limitações da Proposta por Setores Censitários."
+  ),
+  align = c("l", "c", "c", "c", "c", "c", "c"),
+  format = c("", "n", "n", "n", "p", "p", "p")
+)
+```
+
+Após a aplicação das imputações e do processo de correção topológica, o arranjo obtido é o seguinte:
+
+```{r}
+#| echo: false
+#| fig-cap: "Figura 8: Malha Intermediária Ajustada por Setores Censitários"
+
+knitr::include_graphics(layout_qgis(targets::tar_read(layouts_qgis_aacr), "Demonstrativo Áreas de Atuação Proposta Atual", apenas_geral = TRUE))
+```
+
+Em alguns casos, as imputações realizadas pela CGGE resultaram em alterações significativas nas áreas de atuação originalmente definidas pela malha básica. Por exemplo, toda a área correspondente à CR Xingu foi reconfigurada para abranger os setores censitários que compõem a TI do Parque do Xingu. Da mesma forma, a configuração das CRs Xavante e Ribeirão Cascalheira foi ajustada de modo a incorporar as TIs nas quais há presença da etnia Xavante.
+
+O caso da CR-MSol, identificada nos critérios acima como "Imputação Manual (GT CR-MSol)", decorreu de um processo de deliberação mais amplo. A proposta de jurisdição dessa CR foi construída ao longo das reuniões de um Grupo de Trabalho instituído especificamente para acompanhar sua implantação, com representantes da Funai, da Unipi, da Apiam, do Cimi e de lideranças dos municípios envolvidos, que avaliaram critérios de logística, acesso aos serviços, distribuição territorial e demandas das comunidades indígenas. Entre os pontos discutidos, esteve a situação das UTLs de Carauari e Coari: optou-se por integrar a UTL Carauari à jurisdição da CR-MSol, permanecendo a UTL Coari vinculada à CR Manaus. Com base nessas deliberações, consolidou-se a proposta final de abrangência da CR-MSol, incluindo nove municípios (Alvarães, Carauari, Fonte Boa, Japurá, Juruá, Jutaí, Maraã, Tefé e Uarini) e vinte e quatro TIs. Mais informações, mapas, atas e demais documentos podem ser consultados no processo SEI nº 15012.000027/2026-88.
+
+# Limitações da Proposta por Setores Censitários e Adaptação da Proposta para o Nível Municipal
+
+Apesar das vantagens associadas à definição das áreas de atuação com base em setores censitários, a proposta apresenta algumas limitações operacionais e analíticas que devem ser consideradas. Em primeiro lugar, embora esse recorte territorial proporcione maior granularidade e maior aderência aos dados do Censo Demográfico, ele pode dificultar a integração com outras pesquisas e bases de dados governamentais, uma vez que grande parte dessas informações é disponibilizada em escala municipal. Essa diferença de unidades territoriais de referência pode reduzir a interoperabilidade das bases e exigir procedimentos adicionais de compatibilização dos dados.
+
+Além disso, a delimitação por setores censitários pode resultar na fragmentação de municípios entre diferentes áreas de atuação regional. Embora essa característica permita uma representação mais precisa das dinâmicas territoriais, ela também amplia o número de entes municipais e atores locais envolvidos na implementação das ações, potencialmente aumentando a complexidade da coordenação interfederativa e da articulação institucional necessária para a execução das políticas públicas.
+
+Outro aspecto a ser considerado refere-se à comunicabilidade da proposta. A definição de jurisdições a partir de setores censitários torna a divisão territorial menos intuitiva para gestores, parceiros institucionais e demais públicos envolvidos, uma vez que esses recortes não correspondem às unidades administrativas tradicionalmente utilizadas no planejamento e na gestão pública. Soma-se a isso uma limitação relacionada à disponibilidade e ao nível de detalhamento dos dados. Embora a escala dos setores censitários possibilite análises mais desagregadas, a divulgação dessas informações pelo IBGE observa rigorosos procedimentos de proteção de dados e preservação do sigilo estatístico. Em decorrência dessas medidas de anonimização, adotadas para impedir a identificação direta ou indireta de indivíduos e domicílios, determinadas informações podem ser suprimidas ou disponibilizadas somente em níveis mais agregados.
+
+Essa supressão tem efeitos diferentes nos dois tipos de indicador apresentados nesta nota técnica. Na Tabela 5, quando um setor tem seus dados suprimidos, ele é considerado como tendo zero pessoas indígenas, seguindo o mesmo procedimento adotado nas demais etapas da análise. Isso faz com que o total fique menor do que o real: o resultado nacional, de `r fmt_n(pi_setores)` pessoas, fica `r fmt_p(pct_abaixo_oficial)`% abaixo do total oficial de `r fmt_n(pi_oficial)` pessoas indígenas registrado pelo Censo 2022 (Tabela 2).
+
+Já nos indicadores das Figuras 20 a 23 (registro de nascimento, alfabetização, esgotamento sanitário e abastecimento de água), considerar um setor suprimido como tendo zero pessoas poderia alterar o resultado para mais ou para menos, dependendo do dado que não foi divulgado. Por isso, nesses casos, o setor é retirado do cálculo daquele indicador sempre que alguma das informações necessárias estiver suprimida: tanto o número de pessoas que compõe o indicador quanto o total usado como referência são calculados só com os setores que têm dado disponível. Quando uma Coordenação Regional fica com menos de 30 setores válidos para determinado indicador, o resultado aparece como "sem dado suficiente".
+
+Diante dessas limitações, a proposta baseada em setores censitários pode ser adaptada para o nível municipal, preservando parte dos ganhos analíticos e incorporando vantagens relacionadas à interoperabilidade, simplicidade operacional e facilidade de comunicação. A adoção do município como unidade de referência permite maior integração com bases administrativas existentes, facilita a articulação com governos locais e reduz a complexidade associada à gestão de áreas compartilhadas entre diferentes unidades regionais.
+
+Como exercício de adaptação da proposta inicial, foi realizada uma distribuição dos municípios entre as CRs com base em critérios diferenciados conforme a presença de população indígena. Nos municípios sem registro de população indígena, a atribuição foi definida considerando a maior área absoluta de setores censitários sob responsabilidade de determinada CR no território municipal. Já nos municípios com presença de população indígena, adotou-se um critério de ponderação que combina o volume de população indígena atendida e a área de cobertura territorial de cada CR, atribuindo o município à unidade regional que apresenta o maior resultado no produto entre esses dois componentes (PI × Área). Essa abordagem busca equilibrar a dimensão populacional e a abrangência territorial, aproximando a definição das áreas de atuação das demandas potenciais de atendimento institucional.
+
+```{r}
+#| echo: false
+knitr::kable(
+  data.frame(
+  `Situação do Município` = c(
+    "Sem presença de População Indígena (PI)",
+    "Com presença de População Indígena (PI)"
+  ),
+  `Critério de Atribuição` = c(
+    "**Maior Área Absoluta**: O município é integrado à CR que detém a maior área territorial de setores censitários naquela localidade.",
+    "**PI Ponderada por Área**: O município é integrado à CR que obtiver o maior produto entre o volume de população indígena atendida e a sua área de cobertura (PI×Área)."
+  ),
+  check.names = FALSE
+),
+  caption = "Tabela 6: Critérios utilizados para atribuição dos municípios às Coordenações Regionais."
+)
+```
+
+Realizando as imputações dos municípios conforme os critérios supramencionados, chegamos ao seguinte arranjo:\
+
+```{r}
+#| echo: false
+#| fig-cap: "Figura 9: Mapa Geral da Malha Intermediária por Municípios"
+
+knitr::include_graphics(layout_qgis(targets::tar_read(layouts_qgis_aacr), "Demonstrativo Áreas de Atuação Proposta Município", apenas_geral = TRUE))
+```
+
+Em termos de interoperabilidade, a definição das jurisdições por município apresenta vantagens significativas ao possibilitar o uso de dados produzidos nessa escala. Um bom exemplo são os dados do Cadastro Único, que são publicados na plataforma VisData, do MDS, assim como os dados produzidos no âmbito do SIASI.
+
+```{r}
+#| echo: false
+#| fig-cap: "Figura 10: Indígenas no Cadastro Único: População indígena no Cadastro Único para Programas Sociais por CR (mai-2026)"
+
+limpa_figura(targets::tar_read(grafico_cadunico_absoluto))
+```
+
+Ademais, a definição municipal também permite a utilização dos dados sobre línguas e etnias produzidos no âmbito do Censo Demográfico de 2022, possibilitando, por exemplo, a realização de análises a partir do cruzamento dessas informações com dados relativos à estrutura organizacional:
+
+```{r}
+#| echo: false
+#| fig-cap: "Figura 11: Pontos de CCE vs Número de Etnias: Distribuição de pontos CCE pelo número de etnias mapeadas pelo IBGE"
+
+limpa_figura(targets::tar_read(grafico_cce_etnias))
+```
+
+# Adaptação para Municípios e Terras Indígenas
+
+Ao longo do processo de territorialização foram construídas duas propostas de área de atuação: uma por setores censitários, apresentada nas seções anteriores, e uma adaptação por municípios, sem tratamento específico para as TIs, também já apresentada. Ambas foram submetidas à Diretoria Colegiada. Em reunião realizada em 28/07/2026, a Diretoria decidiu que as áreas de atuação das CRs seriam definidas por Município e por Terra Indígena, salvo exceções.
+
+Como TIs e municípios podem se sobrepor parcialmente, foi adotada a regra de que a TI prevalece sobre o município. Assim, o limite da TI é mantido integralmente, e a CR responsável pelo município responde apenas pela parcela que não estiver coberta por uma TI vinculada a outra CR.
+
+A atribuição segue a seguinte ordem:
+
+1.  A partir da malha de setores censitários ajustada (Figura 8), os municípios são alocados à CR que ficou com a maior área de setores censitários (acessibilidade) ponderada pela população indígena (presença indígena), com cada município atribuído a uma única CR;
+2.  A partir do Mapa Geral da Malha Intermediária por Municípios (Figura 9), as TIs são alocadas à CR que ficou responsável pela maior área dos municípios que a integram;
+3.  A partir da atribuição obtida na etapa anterior, a malha básica final é reconstruída seguindo as regras de negócio de prevalência dos recortes territoriais, com os mais específicos prevalecendo sobre os menos específicos.
+
+O diagrama abaixo (Figura 12) resume esses passos:
+
+```{r}
+#| echo: false
+#| fig-cap: "Figura 12: Fluxo de atribuição da CR responsável, por Município e por Terra Indígena"
+
+knitr::include_graphics(normalizePath("documentos/imagens/fluxo_atribuicao_cr.png", winslash = "/"))
+```
+
+Abaixo, o mapa geral e o detalhamento por região (Figura 13).
+
+```{r}
+#| echo: false
+#| fig-cap: "Figura 13: Mapa Geral da Malha Básica por Terras Indígenas e Municípios"
+
+knitr::include_graphics(layout_qgis(targets::tar_read(layouts_qgis_aacr), "Demonstrativo Áreas de Atuação", apenas_geral = TRUE))
+```
+
+```{r}
+#| echo: false
+#| fig-cap: "Figura 13 (Região Norte): Malha Básica por Terras Indígenas e Municípios"
+
+knitr::include_graphics(layout_qgis(targets::tar_read(layouts_qgis_aacr), "Demonstrativo Áreas de Atuação")[2])
+```
+
+```{r}
+#| echo: false
+#| fig-cap: "Figura 13 (Região Centro-Oeste): Malha Básica por Terras Indígenas e Municípios"
+
+knitr::include_graphics(layout_qgis(targets::tar_read(layouts_qgis_aacr), "Demonstrativo Áreas de Atuação")[3])
+```
+
+```{r}
+#| echo: false
+#| fig-cap: "Figura 13 (Região Nordeste): Malha Básica por Terras Indígenas e Municípios"
+
+knitr::include_graphics(layout_qgis(targets::tar_read(layouts_qgis_aacr), "Demonstrativo Áreas de Atuação")[4])
+```
+
+```{r}
+#| echo: false
+#| fig-cap: "Figura 13 (Região Sudeste): Malha Básica por Terras Indígenas e Municípios"
+
+knitr::include_graphics(layout_qgis(targets::tar_read(layouts_qgis_aacr), "Demonstrativo Áreas de Atuação")[5])
+```
+
+```{r}
+#| echo: false
+#| fig-cap: "Figura 13 (Região Sul): Malha Básica por Terras Indígenas e Municípios"
+
+knitr::include_graphics(layout_qgis(targets::tar_read(layouts_qgis_aacr), "Demonstrativo Áreas de Atuação")[6])
+```
+
+# Situação dos Municípios e Terras Indígenas da Proposta
+
+A malha básica apresentada na seção anterior pode ser comparada com duas referências institucionais já existentes: a declaração de atendimento por município, formalizada pelas próprias CRs no processo SEI n° 08620.010286/2021-89, e a vinculação de TIs registrada no SII. Essa comparação permite dimensionar em que medida a proposta converge com o que já está institucionalizado e onde há divergências a avaliar.
+
+## Municípios
+
+```{r}
+#| echo: false
+#| fig-cap: "Figura 14: Convergência entre a proposta e os municípios declarados por CR: comparação entre a CR responsável na malha básica e a CR que declarou o município no processo SEI n° 08620.010286/2021-89"
+
+limpa_figura(targets::tar_read(mapa_divergencia_municipio_declarado))
+```
+
+A Tabela 7 quantifica essas divergências, para cada par de CR declarante (processo SEI n° 08620.010286/2021-89) e CR de destino (malha básica da proposta): o número de municípios que mudam de CR e a população indígena "fora de TI" correspondente (Censo 2022, SIDRA). Esse recorte evita contar duas vezes a população residente em TIs, já quantificada na Tabela 8. Municípios sem nenhuma declaração de CR entram no total nacional que serve de base aos percentuais, mas não na contagem de divergentes, por não haver CR de origem com a qual comparar. A linha "Total" resume a magnitude geral da mudança em relação ao total nacional de municípios.
+
+```{r}
+#| echo: false
+tabela_nt(
+  dados = targets::tar_read(tabela_divergencia_municipio_declarado),
+  titulo = "Tabela 7",
+  legenda = "Municípios com divergência de jurisdição entre a declaração de atendimento (SEI) e a malha básica da proposta, por par de Coordenação Regional declarante e destino.",
+  fonte = "Fonte: processo SEI n° 08620.010286/2021-89 e site institucional da Funai; Censo Demográfico 2022, IBGE (agregado por município, SIDRA). Sujeito a subestimação por sigilo estatístico – ver Limitações da Proposta por Setores Censitários.",
+  align = c("l", "l", "c", "c", "c", "c"),
+  format = c("", "", "n", "n", "p", "p")
+)
+```
+
+## Terras Indígenas
+
+```{r}
+#| echo: false
+#| fig-cap: "Figura 15: Terras Indígenas com divergência de jurisdição entre o SII e a malha básica da proposta"
+
+limpa_figura(targets::tar_read(mapa_divergencia_ti_sii))
+```
+
+A Tabela 8 quantifica essas divergências, para cada par de CR de origem (vinculação vigente no SII) e CR de destino (malha básica da proposta): o número de TIs que mudam de CR e a população indígena oficial correspondente (Censo 2022, agregado por TI do SIDRA). A linha "Total" resume a magnitude geral da mudança em relação ao total nacional de TIs.
+
+```{r}
+#| echo: false
+tabela_nt(
+  dados = targets::tar_read(tabela_divergencia_ti_sii),
+  titulo = "Tabela 8",
+  legenda = "Terras Indígenas com divergência de jurisdição entre o SII e a malha básica da proposta, por par de Coordenação Regional de origem e destino.",
+  fonte = "Fonte: Sistema de Informações Indigenistas (SII); Censo Demográfico 2022, IBGE (agregado por Terra Indígena, SIDRA). Sujeito a subestimação por sigilo estatístico – ver Limitações da Proposta por Setores Censitários.",
+  align = c("l", "l", "c", "c", "c", "c"),
+  format = c("", "", "n", "n", "p", "p")
+)
+```
+
+# Implementação e Reprodutibilidade
+
+O geoprocessamento foi operacionalizado em linguagem R com o uso, entre outros, do pacote *simple features* [@sf], que adota o padrão ISO 19125‑1/OGC [@OGC_06-103r4] para representação de geometrias vetoriais. O pacote *sf* organiza dados espaciais em estruturas tabulares com uma coluna de geometria, permitindo integração com o tidyverse. Ele atua como uma interface para bibliotecas em C/C++ como GDAL, GEOS e PROJ, utilizadas internamente para leitura, transformação de coordenadas e operações espaciais. A partir desse pacote, foram realizadas tarefas como leitura de arquivos vetoriais, reprojeção de sistemas de coordenadas, recortes espaciais, cálculos de área e operações de sobreposição.
+
+A rotina de processamento foi estruturada em um pipeline escalável e reprodutível, totalmente orquestrado a partir do *framework* targets [@targets]. O repositório do projeto será público e disponibilizado na plataforma GitHub.
+
+# Potencialidades da Definição de Áreas de Atuação Considerando a Divisão Político-Administrativa
+
+A definição das áreas de atuação das CRs constitui instrumento analítico e gerencial para o fortalecimento da governança territorial da Funai. O estabelecimento de recortes geográficos precisos não se limita à divisão administrativa de responsabilidades, mas permite aproximar a organização institucional das dinâmicas territoriais e dos desafios logísticos da atuação indigenista.
+
+Para a Funai, a definição das áreas de atuação das CRs cria uma referência comum para organizar informações, orientar a busca ativa e subsidiar o planejamento e a alocação de recursos. A associação entre dados de diferentes fontes e unidades territoriais permite, ainda, identificar desigualdades, acompanhar a evolução dos contextos locais e produzir evidências para a tomada de decisão. As aplicações apresentadas a seguir ilustram esse potencial a partir da malha básica, tendo TIs e municípios como unidades territoriais de referência.
+
+Os indicadores desta seção são calculados sobre a malha básica por dois métodos distintos, conforme a natureza do dado. Os indicadores de focos de queimada resultam de um cruzamento geoespacial direto com a malha básica (interseção de pontos e polígonos), sem depender da malha de setores censitários.
+
+Já os indicadores extraídos do Censo 2022 (população urbana/rural, registro de nascimento, alfabetização, saneamento) são publicados pelo IBGE nos resultados agregados do Censo; como a malha básica define jurisdição a nível de TI e de Município, sem uma malha própria de setores, esses indicadores são atribuídos a cada CR associando cada setor censitário à TI que contém ao menos 50% de sua área -- um critério de maioria simples, mais permissivo que o da estimativa populacional da Introdução, adotado para garantir que todo setor censitário do país seja classificado em algum território, sem exclusões por sobreposição apenas parcial. Quando essa condição não é atendida por nenhuma TI, o setor é atribuído ao seu município; em ambos os casos, herda a CR já definida para aquele território na malha básica.
+
+Cada setor censitário é assim contabilizado em uma única CR, o que evita dupla contagem nas áreas de sobreposição. Por resultarem desse cruzamento aproximado, e não de uma malha de setores desenhada especificamente para essa finalidade, os indicadores do Censo apresentados a seguir devem ser interpretados como estimativas.
+
+```{r}
+#| echo: false
+#| fig-cap: "Figura 16: Distribuição Proporcional da População Indígena por CR: Comparativo entre a concentração do público total e do público residente em áreas rurais"
+
+limpa_figura(targets::tar_read(grafico_pct_pi_comparativo))
+
+```
+
+A partir dos dados de população do Censo Demográfico de 2022 é possível visualizar a distribuição da população indígena para cada CR na proposta. Considerando a população total, as CRs de Manaus, Baixo São Francisco, Alto Solimões e Pernambuco concentram o maior número de pessoas indígenas, enquanto as CRs Norte do Mato Grosso, Centro Leste do Pará, Cacoal e Noroeste do Mato Grosso concentram os menores.
+
+Ao considerar apenas a população indígena residente em áreas rurais, as CRs de Roraima I, Pernambuco, Manaus e Maranhão concentram o maior percentual da população nacional, ao passo que as CRs Norte do Mato Grosso, Centro Leste do Pará, Cacoal e Litoral Sul ficam com as menores proporções.
+
+Além disso, a integração dos dados de população indígena com os dados de execução orçamentária extraídos do SIOP possibilita a realização de análises complementares e o cálculo de indicadores referenciais para a distribuição orçamentária, como o valor descentralizado por pessoa indígena. Ressalta-se, contudo, que os números resultam do cruzamento de dados de população do Censo Demográfico de 2022 com dados de execução orçamentária de 2025, devendo, portanto, ser interpretado com cautela, uma vez que combina informações referentes a períodos distintos.
+
+```{r}
+#| echo: false
+#| fig-cap: "Figura 17: Orçamento Descentralizado em 2025 por Pessoa Indígena: Orçamento discricionário descentralizado por indígena para cada CR"
+
+limpa_figura(targets::tar_read(grafico_orcamento_pi_cr))
+```
+
+Considerando essa ressalva, as CRs Norte do Mato Grosso, Centro Leste do Pará e Kayapó Sul do Pará apresentaram os maiores valores de orçamento descentralizado por pessoa indígena. Cabe notar que as duas primeiras têm população indígena reduzida, o que amplia a sensibilidade desse indicador per capita. O indicador permite identificar diferenças na distribuição relativa dos recursos entre as CRs e pode subsidiar análises sobre a alocação orçamentária, desde que interpretado em conjunto com outros fatores, como as especificidades territoriais, os custos operacionais e as características da população atendida.
+
+A delimitação dos novos polígonos de atuação regional viabiliza a integração com bases de dados georreferenciadas externas, ampliando a capacidade de diagnóstico institucional para além dos limites das TIs. A título de exemplo, o cruzamento com o BDQUEIMADAS-INPE permite monitorar focos de calor e qualificar a análise ambiental de cada CR. Sob a ótica da cobertura integral do território nacional proposta, as CRs Araguaia Tocantins, Maranhão, Baixo São Francisco e Roraima I concentraram o maior volume absoluto de focos de calor registrados entre janeiro e maio de 2026.
+
+```{r}
+#| echo: false
+#| fig-cap: "Figura 18: Contagem total de focos de calor identificados por Coordenação Regional (jan.–mai. 2026)."
+
+limpa_figura(targets::tar_read(grafico_focos_queimadas_cr))
+```
+
+```{r}
+#| echo: false
+#| fig-cap: "Figura 19: Contagem de focos de calor ocorridos dentro dos limites de Terras Indígenas por Coordenação Regional (jan.–mai. 2026)."
+
+limpa_figura(targets::tar_read(grafico_focos_queimadas_ti))
+```
+
+Ao restringir a análise aos focos de calor localizados dentro dos limites de TIs, observa-se que as CRs Roraima I, Cuiabá e Araguaia Tocantins apresentaram os maiores volumes de focos identificados no mesmo período, o que sinaliza pressões ambientais mais severas nas áreas sob suas respectivas responsabilidades.
+
+Esses indicadores ajudam a identificar riscos e a planejar ações de prevenção, manejo do fogo e combate a crimes ambientais. No entanto, eles precisam ser analisados levando em conta o contexto de cada local, como o tamanho das áreas protegidas, os diferentes tipos de vegetação existentes e as sazonalidades climáticas regionais.
+
+Adicionalmente, a interoperabilidade dessa malha territorializada viabiliza o monitoramento integrado de outras pressões antropogênicas crônicas, como a atividade garimpeira ilegal. O cruzamento dos polígonos de atuação com os dados de mineração da Coleção 9 do MapBiomas [@mapbiomas2024mining], por exemplo, permite identificar e quantificar a extensão acumulada das áreas impactadas pelo garimpo, contribuindo para qualificar o diagnóstico da degradação ambiental e de seus efeitos sobre as populações indígenas, inclusive no que se refere à exposição a diferentes vetores de violência.
+
+Também é possível identificar como diferentes dimensões de vulnerabilidade que afetam os povos indígenas se distribuem entre as unidades regionais. A partir dos dados do Censo Demográfico, a delimitação das áreas de abrangência pela malha básica permite analisar indicadores sociais relevantes, como o percentual de crianças indígenas de até 5 anos sem registro de nascimento ou cujos responsáveis declararam não saber informar sobre a existência desse registro; a taxa de analfabetismo entre pessoas indígenas com 15 anos ou mais; a proporção de domicílios com moradores indígenas que apresentam condições inadequadas de esgotamento sanitário; e a dependência de rios, açudes, córregos ou igarapés como fonte direta de abastecimento de água.
+
+```{r}
+#| echo: false
+#| fig-cap: "Figura 20: Ausência de Registro de Nascimento para pessoas indígenas de até 5 anos por Coordenação Regional: Percentual de Pessoas indígenas de até 5 anos de idade que não tem ou não sabe se tem registro de nascimento"
+
+limpa_figura(targets::tar_read(grafico_registro_nascimento))
+```
+
+```{r}
+#| echo: false
+#| fig-cap: "Figura 21: Taxa de Analfabetismo por Coordenação Regional: Percentual de pessoas indígenas com 15 anos ou mais analfabetas"
+
+limpa_figura(targets::tar_read(grafico_alfabetizacao))
+```
+
+```{r}
+#| echo: false
+#| fig-cap: "Figura 22: Domicílios Indígenas com Esgotamento Sanitário Precário por Coordenação Regional: Percentual de domicílios com esgoto destinado a fossas rudimentares, valas ou rios"
+
+limpa_figura(targets::tar_read(grafico_deficit_saneamento))
+```
+
+```{r}
+#| echo: false
+#| fig-cap: "Figura 23: Dependência de Rios e Lagos para Abastecimento de Água por Coordenação Regional: Percentual de domicílios indígenas abastecidos diretamente por rios, açudes, córregos ou igarapés"
+
+limpa_figura(targets::tar_read(grafico_risco_hidrico))
+```
+
+# Conclusão
+
+Ante o exposto, esta nota técnica apresentou uma proposta preliminar de territorialização do atendimento prestado pelas CRs da Funai. A proposta parte do roteamento logístico dos setores censitários do IBGE e é adaptada, em etapa posterior, para as unidades de município e Terra Indígena, conforme diretriz da Diretoria Colegiada de 28/07/2026. Ela cobre a totalidade do território nacional, supera a defasagem da Portaria nº 1.491/2011 e a limitação de uma vinculação territorial restrita às TIs, incorporando também a população indígena que vive fora delas. Os indicadores apresentados ao longo do documento, construídos a partir do cruzamento dessa territorialização com dados de população, orçamento, meio ambiente e proteção social, ilustram o ganho analítico e gerencial que a definição de áreas de atuação claras proporciona ao planejamento institucional.
+
+Ressalta-se, por fim, que a territorialização da política indigenista deve ser concebida como um processo contínuo de construção institucional, orientado por mecanismos de diálogo e participação. Nesse sentido, o aprimoramento das áreas de atuação propostas requer o envolvimento das diferentes unidades da Funai e, sempre que possível, a consideração das contribuições dos povos indígenas afetados.
+
+## Encaminhamentos
+
+A proposta ora apresentada permanece em fase de construção e validação, não configurando decisão institucional fechada. O encaminhamento previsto para essa validação consiste, inicialmente, na realização de um encontro geral com as CRs para apresentação detalhada da proposta, ao qual se seguirão encontros virtuais regionais, nos quais cada CR poderá contribuir com ajustes a partir de sua realidade operacional. Espera-se que esses encontros incorporem especificidades logísticas, vínculos históricos das equipes com as comunidades atendidas e demais particularidades territoriais não plenamente capturadas pelos critérios adotados nesta etapa.
+
+Os encontros virtuais regionais estão organizados por agrupamentos de CRs, conforme a Tabela 9. Cada agrupamento corresponde a um encontro, com participação obrigatória das CRs nele relacionadas.
+
+```{r}
+#| echo: false
+tabela_nt(
+  dados = targets::tar_read(tabela_encontros_regionais),
+  titulo = "Tabela 9",
+  legenda = "Encontros virtuais regionais propostos, por agrupamento de Coordenações Regionais. A Região indicada é a predominante entre as CRs de participação obrigatória do encontro.",
+  fonte = "Fonte: Elaboração própria (CGGE).",
+  align = c("c", "c", "l", "l")
+)
+```
+
+Para subsidiar essa etapa de validação, será disponibilizado a cada CR um conjunto de materiais de apoio: planilha eletrônica com a relação dos municípios, distritos e TIs sob sua responsabilidade na proposta; mapas em formato PDF, organizados por Grande Região, para visualização detalhada; e um mapa interativo, em formato de aplicativo web, para navegação e conferência da proposta de jurisdição -- por meio do qual a evolução da proposta poderá ser acompanhada por todos ao longo do processo de validação. Também está em avaliação a forma de envolvimento das organizações indígenas nesse processo de refinamento, tendo em vista que a proposta incide diretamente sobre a jurisdição referente às TIs e, por consequência, sobre os povos que nelas habitam.
+
+Cabe registrar, por fim, que a definição das áreas de atuação das Frentes de Proteção Etnoambiental não integra o escopo desta nota técnica, encontrando-se em consolidação junto à Diretoria de Proteção Territorial, a ser apresentada em etapa e material próprios. Eventuais situações de sobreposição entre a área de atuação de uma CR e a de uma Frente de Proteção já identificadas serão tratadas pontualmente, como exceções, e não como regra geral.
+
+Encaminhe-se a presente Nota Técnica à DAGES para conhecimento e, se de acordo, adoção dos seguintes encaminhamentos subsequentes:
+
+a)  Remessa à autoridade máxima da Funai, para ciência e apoio na interlocução com as unidades descentralizadas quanto ao agendamento dos encontros virtuais regionais previstos na Tabela 9;
+
+b)  Remessa à Diretoria de Proteção Territorial, para ciência e agendamento de reunião com a equipe da Coordenação-Geral de Gestão Estratégica (CGGE), com vistas a incorporar à proposta a área de atuação das Coordenações das Frentes de Proteção Etnoambiental, preferencialmente antes da realização dos encontros regionais; e
+
+c)  Remessa, pela Diretoria, aos demais destinatários que entender pertinentes no momento, para conhecimento e proposição de melhorias.
+
+É a nota técnica. À consideração superior.
+
+```{r}
+#| include: false
+anexos <- targets::tar_read(anexos_imputacoes)
+```
+
+```{r}
+#| eval: false
+#| include: false
+if (nrow(anexos$uf) > 0) {
+  knitr::kable(
+    anexos$uf,
+    caption = "Anexo A - Imputações agregadas por Unidade da Federação",
+    align = "l",
+    col.names = c('Cód. Unidade', 'Sigla', 'Nome', 'Cód. UF', 'UF')
+  )
+} else {
+  cat("*Não houve imputações agregadas por UF.*")
+}
+```
+
+```{r}
+#| eval: false
+#| include: false
+if (nrow(anexos$municipio) > 0) {
+  knitr::kable(
+    anexos$municipio,
+    caption = "Anexo B - Imputações agregadas por Município",
+    align = "l"
+  )
+} else {
+  cat("*Não houve imputações agregadas por município.*")
+}
+```
+
+```{r}
+#| eval: false
+#| include: false
+if (nrow(anexos$distrito) > 0) {
+  knitr::kable(
+    anexos$distrito,
+    caption = "Anexo C - Imputações agregadas por Distrito",
+    align = "l",
+    col.names = c('Cód. Unidade', 'Sigla', 'Nome', 'Cód. UF', 'UF', 'Cód. Mun.', 'Nome Município', 'Cód. Distrito', 'Nome Distrito')
+  )
+} else {
+  cat("*Não houve imputações agregadas por distrito.*")
+}
+```
+
+```{r}
+#| eval: false
+#| include: false
+if (nrow(anexos$setor) > 0) {
+  knitr::kable(
+    anexos$tis,
+    caption = "Anexo D - Imputações de Terras Indígenas",
+    align = "l",
+    col.names = c('Cód. Unidade', 'Nome', 'Cód. Funai da TI', 'TI', 'Modalidade', 'Fase', 'N° Setores')
+  )
+} else {
+  cat("*Não houve imputações de Terras Indígenas*")
+}
+```
+
+```{r}
+#| eval: false
+#| include: false
+if (nrow(anexos$setor) > 0) {
+  knitr::kable(
+    anexos$setor,
+    caption = "Anexo E - Imputações por Setor Censitário",
+    align = "l",
+    col.names = c('Cód. Unidade', 'Sigla', 'Nome', 'Cód. UF', 'UF', 'Cód. Município', 'Município', 'Cód. Distrito', 'Distrito', 'Cód. Setor')
+  )
+} else {
+  cat("*Não houve imputações por setor censitário.*")
+}
+```

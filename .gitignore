@@ -1,0 +1,33 @@
+# RStudio / R
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+
+# Cache do {targets} (o caminho do store fica em _targets.yaml, que é local)
+_targets/
+_targets.yaml
+
+# Dados baixados e intermediários do pipeline
+dados/brutos/
+dados/processados/
+
+# Tudo o que o pipeline gera (figuras, tabelas, documentos renderizados, relatórios, logs)
+saidas/
+
+# Arquivos de trabalho pessoais, fora do repositório
+local/
+
+# Arquivos temporários do Quarto e do Office
+/.quarto/
+*_files/
+~$*
+
+**/*.quarto_ipynb
+
+# Configuração local (JURISDICOES_ATUALIZAR, PYTHON_QGIS_BAT etc.)
+.Renviron
+
+# Apresentação para as CRs: uso interno, mantida só localmente
+documentos/apresentacao_crs.qmd
+documentos/templates/
